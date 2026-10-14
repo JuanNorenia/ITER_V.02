@@ -19,16 +19,20 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("Resend contact adapter (mocked fetch only)", () => {
+describe("contact adapters (mocked fetch only)", () => {
   it.each([
     {},
     { ...config, CONTACT_PROVIDER: undefined },
-    { ...config, CONTACT_PROVIDER: "webhook" },
+    { ...config, CONTACT_PROVIDER: "unsupported" },
+    { CONTACT_PROVIDER: "webhook" },
+    { CONTACT_FORWARD_URL: "not a URL" },
+    { CONTACT_FORWARD_URL: "file:///private/contacts" },
+    { CONTACT_FORWARD_URL: "https://user:secret@legacy.example/hook" },
+    { CONTACT_FORWARD_URL: "https://legacy.example/hook#fragment" },
     { ...config, RESEND_API_KEY: "" },
     { ...config, RESEND_API_KEY: "key\r\ninjection" },
     { ...config, CONTACT_FROM_EMAIL: "" },
     { ...config, CONTACT_TO_EMAIL: "invalid" },
-    { CONTACT_FORWARD_URL: "https://legacy.example/hook" },
   ])(
     "fails honestly on missing or invalid configuration without sending: %j",
     env => {
@@ -76,18 +80,98 @@ describe("Resend contact adapter (mocked fetch only)", () => {
     expect(init.signal?.aborted).toBe(false);
   });
 
+  it("accepts legacy Resend names without requiring CONTACT_PROVIDER", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "legacy-message-id" }))
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    await createContactProvider({
+      RESEND_API_KEY: config.RESEND_API_KEY,
+      CONTACT_FROM: config.CONTACT_FROM_EMAIL,
+      CONTACT_TO: config.CONTACT_TO_EMAIL,
+    }).send(validContact(), "digest");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      from: config.CONTACT_FROM_EMAIL,
+      to: [config.CONTACT_TO_EMAIL],
+    });
+  });
+
+  it("prefers explicit Resend and canonical addresses over legacy configuration", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "canonical-message-id" }))
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    await createContactProvider({
+      ...config,
+      CONTACT_FROM: "legacy-from@example.com",
+      CONTACT_TO: "legacy-to@example.com",
+      CONTACT_FORWARD_URL: "https://legacy.example/hook",
+    }).send(validContact(), "digest");
+    expect(fetchMock.mock.calls[0][0]).toBe("https://api.resend.com/emails");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      from: config.CONTACT_FROM_EMAIL,
+      to: [config.CONTACT_TO_EMAIL],
+    });
+  });
+
+  it.each([undefined, "webhook"])(
+    "preserves the legacy webhook payload and confirms only HTTP acceptance (%s)",
+    async CONTACT_PROVIDER => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(null, { status: 204 }));
+      vi.stubGlobal("fetch", fetchMock);
+      const input = validContact();
+      await createContactProvider({
+        CONTACT_PROVIDER,
+        CONTACT_FORWARD_URL: "https://legacy.example/hook",
+      }).send(input, "digest");
+      const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+      expect(url).toBe("https://legacy.example/hook");
+      expect(init.redirect).toBe("error");
+      expect(init.headers).toEqual({
+        "content-type": "application/json",
+        "idempotency-key": "contact-digest",
+      });
+      expect(JSON.parse(init.body as string)).toEqual({
+        nombre: input.nombre,
+        email: input.email,
+        empresa: input.empresa,
+        mensaje: input.mensaje,
+        tipoNecesidad: input.tipoNecesidad,
+        presupuesto: input.presupuesto,
+      });
+    }
+  );
+
+  it("does not accept a failed webhook response as success", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(new Response("private@example.com", { status: 503 }))
+    );
+    await expect(
+      createContactProvider({
+        CONTACT_FORWARD_URL: "https://legacy.example/hook",
+      }).send(validContact(), "digest")
+    ).rejects.toMatchObject({ kind: "failed" });
+  });
+
   it.each([400, 401, 403, 429, 500, 503])(
     "rejects HTTP %i without exposing provider responses or logging PII",
     async status => {
       vi.stubGlobal(
         "fetch",
-        vi
-          .fn()
-          .mockResolvedValue(
-            new Response("private@example.com secret-provider-error", {
-              status,
-            })
-          )
+        vi.fn().mockResolvedValue(
+          new Response("private@example.com secret-provider-error", {
+            status,
+          })
+        )
       );
       const log = vi.spyOn(console, "log").mockImplementation(() => {});
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});

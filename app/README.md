@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Aplicación ITER
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend React 19 + TypeScript + Vite 7 + Tailwind CSS 3, con API Hono/tRPC y producción Node.js. Este README sustituye la plantilla inicial de Vite; la [entrada del repositorio](../README.md) y las [guías](../docs/desarrollo.md) describen el proyecto.
 
-Currently, two official plugins are available:
+> Los comandos y comportamientos siguientes son el contrato de integración. Si falta un script o su comportamiento no coincide, integra el cambio correspondiente antes de desplegar: este documento y el workflow no implementan código de la app ni certifican pruebas superadas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requisitos e instalación
 
-## React Compiler
+- Node.js **>= 22.12**; recomendado **24 LTS**.
+- npm y el `package-lock.json` de esta carpeta: utiliza `npm ci`.
+- No se requiere base de datos para la landing y el formulario de contacto.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Abre una terminal en `app/`. Crea el entorno local **solo si no tienes `.env`**:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```powershell
+# PowerShell
+Copy-Item .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+# Linux
+cp .env.example .env
 ```
+
+Después, en cualquiera de los dos sistemas:
+
+```sh
+npm ci
+npm run dev
+```
+
+Frontend y API: `http://localhost:3000/`. Consulta la [guía de desarrollo](../docs/desarrollo.md) para configurar las variables y resolver incidencias.
+
+## Contrato de scripts
+
+| Comando | Uso |
+| --- | --- |
+| `npm run dev` | Vite en el puerto 3000, frontend y API en el mismo origen |
+| `npm run check` | Comprobaciones estáticas del proyecto |
+| `npm test` | Pruebas automatizadas; proveedor externo simulado, sin entrega real |
+| `npm run build` | Compila `dist/public` y el servidor Node `dist/boot.js` |
+| `npm run build:pages` | Ejecuta `vite build --mode pages`; compila solo el frontend |
+| `npm run preview` | Sirve estáticos en el puerto 4173; no ejecuta Hono/tRPC |
+| `npm start` | Arranca la producción Node tras un build completo, con script compatible con Windows y Linux |
+
+No uses `npm run preview` como prueba de backend ni `npm start` para validar un build exclusivamente Pages. Un `dist/boot.js` de un build anterior puede seguir existiendo: no convierte el build estático en un build completo.
+
+## Entorno
+
+La referencia es [`.env.example`](.env.example); sus valores de correo están vacíos intencionadamente.
+
+- Públicas, incorporadas por Vite al build: `VITE_API_BASE_URL`, `VITE_CONTACT_EMAIL`, `VITE_SITE_URL`, `VITE_BASE_PATH`.
+- Solo API/servidor: `CONTACT_PROVIDER`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`, `ALLOWED_ORIGINS`, `TRUST_PROXY`, `PORT`.
+- Nunca pongas secretos en variables `VITE_*`, en el navegador ni en variables del repositorio destinadas al build de Pages.
+- `VITE_API_BASE_URL` es un origen externo sin `/api/trpc`. Vacío permite mismo origen en desarrollo/Node; Pages y preview sin API no pueden confirmar envío.
+- `VITE_CONTACT_EMAIL` no configura el destinatario del backend. No se proporciona ninguna dirección ficticia como contacto real.
+
+Los cambios en `VITE_*` requieren reiniciar desarrollo o reconstruir los estáticos. Los cambios del servidor requieren reiniciarlo.
+
+## Rutas, idiomas e identidad
+
+`HashRouter` utiliza `/` y `/contacto` como rutas internas: `/#/` y `/#/contacto`. Un enlace a una sección tiene la forma `/#/?section=metodo`; no se pide `/contacto` al servidor de Pages.
+
+Español es el idioma inicial; inglés y francés se seleccionan en la UI y la preferencia se conserva en `localStorage`. Los datos del formulario no se guardan allí. Ante API ausente o error del proveedor, se informa del problema y se mantienen los campos en memoria, sin simular éxito.
+
+Se mantienen el hero, el caballo y la identidad original. La nueva pieza ASCII de contacto es independiente, no una sustitución. El overlay de privacidad existente sigue siendo un documento provisional pendiente de revisión.
+
+## Guías de trabajo
+
+- [Desarrollo Windows/Linux y entorno](../docs/desarrollo.md).
+- [Despliegue manual a Pages, bases de ruta y API externa](../docs/despliegue.md).
+- [Arquitectura y límites](../docs/arquitectura.md).
+- [Verificación de UI, errores y envío real](../docs/verificacion.md).

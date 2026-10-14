@@ -1,0 +1,80 @@
+name: Desplegar Pages manualmente
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Comprobar y compilar frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Instalar dependencias del lockfile
+        run: npm ci
+
+      - name: Comprobar el proyecto
+        run: npm run check
+
+      - name: Ejecutar pruebas sin entrega real de correo
+        run: npm test
+
+      - name: Compilar solo el frontend para Pages
+        run: npm run build:pages
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          # Dominio personalizado: definir VITE_BASE_PATH=/ en las variables del repositorio.
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/' || format('/{0}/', github.event.repository.name)) }}
+
+      - name: Verificar la salida estática
+        run: test -f dist/public/index.html
+
+      - name: Preparar artefacto de Pages sin servidor Node
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: app/dist/public
+
+  deploy:
+    name: Desplegar el artefacto estático
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Leer la configuración de Pages ya habilitada
+        uses: actions/configure-pages@v5
+        with:
+          enablement: "false"
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

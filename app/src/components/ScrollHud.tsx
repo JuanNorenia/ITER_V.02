@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/providers/LocaleProvider";
 
 /**
  * HUD DE RECORRIDO
@@ -21,10 +22,12 @@ const SECTIONS = [
 ] as const;
 
 export default function ScrollHud() {
+  const { t } = useLocale();
   const barRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
-  const [current, setCurrent] =
-    useState<(typeof SECTIONS)[number]>(SECTIONS[0]);
+  const [current, setCurrent] = useState<(typeof SECTIONS)[number]>(
+    SECTIONS[0]
+  );
 
   // Progreso total: barra superior + riel lateral
   useEffect(() => {
@@ -56,16 +59,16 @@ export default function ScrollHud() {
   // Sección activa
   useEffect(() => {
     const io = new IntersectionObserver(
-      (entries) => {
+      entries => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
-          const found = SECTIONS.find((s) => s.id === entry.target.id);
+          const found = SECTIONS.find(s => s.id === entry.target.id);
           if (found) setCurrent(found);
         }
       },
-      { rootMargin: "-40% 0px -50% 0px" },
+      { rootMargin: "-40% 0px -50% 0px" }
     );
-    SECTIONS.forEach((s) => {
+    SECTIONS.forEach(s => {
       const el = document.getElementById(s.id);
       if (el) io.observe(el);
     });
@@ -101,7 +104,7 @@ export default function ScrollHud() {
         aria-hidden="true"
       >
         <span className="tabular-nums [writing-mode:vertical-rl]">
-          {current.index} / 07 — {current.label}
+          {current.index} / 07 — {t(current.label)}
         </span>
       </div>
     </>

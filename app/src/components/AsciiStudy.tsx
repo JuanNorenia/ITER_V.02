@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useLocale } from "@/providers/LocaleProvider";
 
 /**
  * ESTUDIO DE MOVIMIENTO N.º 001
@@ -86,6 +87,7 @@ function field(x: number, y: number, u: number, A: number): number {
 }
 
 export default function AsciiStudy({ className = "" }: { className?: string }) {
+  const { t } = useLocale();
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
@@ -256,12 +258,12 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
 
   return (
     <figure
-      className={`flex flex-col border border-ink bg-paper ${className}`}
-      aria-label="Estudio de movimiento: figuras geométricas que se construyen, se desplazan y se recortan en bucle, dibujadas con caracteres tipográficos."
+      className={`flex min-w-0 flex-col border border-ink bg-paper ${className}`}
+      aria-label={t("Estudio de movimiento: figuras geométricas que se construyen, se desplazan y se recortan en bucle, dibujadas con caracteres tipográficos.")}
     >
-      <figcaption className="mono-label flex items-center justify-between gap-2 border-b border-ink px-3 py-2">
-        <span>ITER — Estudio de movimiento N.º 001</span>
-        <span className="hidden gap-1 sm:flex" aria-hidden="true">
+      <figcaption className="mono-label flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-ink px-3 py-2">
+        <span className="min-w-0">{t("ITER — Estudio de movimiento N.º 001")}</span>
+        <span className="hidden shrink-0 gap-1 sm:flex" aria-hidden="true">
           {chip("BUILD", "Build")}
           {chip("SHIFT", "Shift")}
           {chip("CUT", "Cut")}
@@ -280,10 +282,10 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
         />
       </div>
 
-      <div className="mono-label flex items-center justify-between border-t border-ink px-3 py-2 text-ink">
-        <span ref={frameRef}>F01/24</span>
-        <span>Movimiento secuencial → retícula tipográfica</span>
-        <span aria-hidden="true">
+      <div className="mono-label grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border-t border-ink px-3 py-2 text-ink">
+        <span ref={frameRef} className="whitespace-nowrap tabular-nums">F01/24</span>
+        <span className="min-w-0 text-center">{t("Movimiento secuencial → retícula tipográfica")}</span>
+        <span className="whitespace-nowrap" aria-hidden="true">
           Loop<span className="blink">_</span>
         </span>
       </div>

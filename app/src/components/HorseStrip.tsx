@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useLocale } from "@/providers/LocaleProvider";
 
 /**
  * ESTUDIO DE MOVIMIENTO N.º 002 — GALOPE
@@ -113,6 +114,7 @@ const TICK = 1000 / 13; // cadencia del galope
 const BASE_SPEED = 0.62; // celdas por fotograma
 
 export default function HorseStrip({ className = "" }: { className?: string }) {
+  const { t } = useLocale();
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const horseRef = useRef<HTMLPreElement>(null);
@@ -259,13 +261,13 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
   return (
     <figure
       className={`border-y border-white/15 bg-black text-white ${className}`}
-      aria-label="Estudio de movimiento: un caballo galopando descompuesto en seis fotogramas dibujados con caracteres tipográficos. El ciclo se repite para avanzar."
+      aria-label={t("Estudio de movimiento: un caballo galopando descompuesto en seis fotogramas dibujados con caracteres tipográficos. El ciclo se repite para avanzar.")}
     >
-      <figcaption className="mono-label flex items-center justify-between gap-2 border-b border-white/15 px-5 py-2.5 sm:px-8">
-        <span>ITER — Estudio de movimiento N.º 002</span>
+      <figcaption className="mono-label flex flex-wrap items-center justify-between gap-3 border-b border-white/15 px-5 py-2.5 sm:px-8">
+        <span>{t("ITER — Estudio de movimiento N.º 002")}</span>
         <span className="hidden items-center gap-2 sm:flex" aria-hidden="true">
           <span className="inline-block h-2 w-2 bg-red" />
-          Galope / iteración
+          {t("Galope / iteración")}
         </span>
       </figcaption>
 
@@ -285,14 +287,14 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
         />
       </div>
 
-      <div className="mono-label flex items-center justify-between border-t border-white/15 px-5 py-2.5 sm:px-8">
+      <div className="mono-label grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 border-t border-white/15 px-5 py-2.5 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:px-8">
         <span ref={frameRef} className="text-red tabular-nums">
           F01/06
         </span>
-        <span className="hidden sm:block">
-          Locomoción secuencial → retícula tipográfica
+        <span className="hidden min-w-0 sm:block">
+          {t("Locomoción secuencial → retícula tipográfica")}
         </span>
-        <span className="text-white/50">Un ciclo que se repite para avanzar</span>
+        <span className="min-w-0 text-right text-white/50">{t("Un ciclo que se repite para avanzar")}</span>
       </div>
     </figure>
   );

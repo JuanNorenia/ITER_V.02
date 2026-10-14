@@ -1,67 +1,79 @@
+import { Link } from "react-router";
 import { Reveal } from "@/components/Reveal";
 import { useInView } from "@/hooks/useInView";
+import { contactPath } from "@/lib/navigation";
+import { useLocale } from "@/providers/LocaleProvider";
 
 /**
  * SECCIÓN 08 — CTA FINAL
  * Inversión total: fondo negro, tipografía blanca, un solo camino.
  */
 export default function FinalCta() {
+  const { t } = useLocale();
   const ref = useInView<HTMLElement>(0.15);
 
   return (
     <section
       id="conversacion"
       ref={ref}
-      className="rv-observe scroll-mt-16 bg-black px-5 py-24 text-white sm:px-8 lg:py-36"
+      className="rv-observe scroll-mt-16 break-words bg-black px-5 py-24 text-white sm:px-8 lg:py-36"
       aria-labelledby="cta-title"
     >
       <Reveal variant="up">
         <p className="mono-label text-white/50">
-          <span className="text-red">06</span> / Conversación
+          <span className="text-red">06</span> / {t("Conversación")}
         </p>
       </Reveal>
 
-      <h2 id="cta-title" className="display-hero mt-8">
+      <h2
+        id="cta-title"
+        className="display-hero mt-8"
+        aria-label={t("¿Qué podría funcionar mejor?")}
+      >
         <Reveal variant="line" delay={60}>
-          ¿Qué podría
+          {t("¿Qué podría")}
         </Reveal>
         <Reveal variant="line" delay={180} className="lg:pl-[0.8em]">
-          funcionar
+          {t("funcionar")}
         </Reveal>
         <Reveal variant="line" delay={300}>
           <span className="inline-block bg-red px-[0.12em] text-white">
-            mejor?
+            {t("mejor?")}
           </span>
         </Reveal>
       </h2>
 
       <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12">
-        <Reveal variant="up" delay={420} className="lg:col-span-5">
+        <Reveal variant="up" delay={420} className="min-w-0 lg:col-span-5">
           <p className="body-text text-white/70">
-            Cuéntanos qué problema tienes, qué te está quitando tiempo o qué
-            te gustaría construir.
+            {t(
+              "Cuéntanos qué problema tienes, qué te está quitando tiempo o qué te gustaría construir."
+            )}
           </p>
           <p className="body-text mt-4 text-white/70">
-            No necesitas llegar con una solución definida. Podemos empezar por
-            entender el problema.
+            {t(
+              "No necesitas llegar con una solución definida. Podemos empezar por entender el problema."
+            )}
           </p>
         </Reveal>
 
         <Reveal
           variant="up"
           delay={520}
-          className="flex flex-col items-start justify-end lg:col-span-7 lg:items-end"
+          className="flex min-w-0 flex-col items-start justify-end lg:col-span-7 lg:items-end"
         >
-          <a
-            href="#contacto"
+          <Link
+            to={contactPath()}
             data-magnetic
-            data-cursor="Empezar"
-            className="btn-sweep btn-sweep--ink mono-label inline-flex h-14 items-center justify-center border border-white bg-white px-9 text-black"
+            data-cursor={t("Empezar")}
+            className="btn-sweep btn-sweep--ink mono-label inline-flex min-h-14 min-w-0 max-w-full items-center justify-center whitespace-normal border border-white bg-white px-9 py-4 text-center text-black"
           >
-            Hablemos de tu proyecto ↗
-          </a>
+            {t("Hablemos de tu proyecto ↗")}
+          </Link>
           <p className="mono-data mt-5 text-white/50">
-            No necesitas tenerlo todo resuelto para empezar la conversación.
+            {t(
+              "No necesitas tenerlo todo resuelto para empezar la conversación."
+            )}
           </p>
         </Reveal>
       </div>

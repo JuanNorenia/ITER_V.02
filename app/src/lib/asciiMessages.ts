@@ -17,6 +17,14 @@ export const asciiMessages: Record<string, { en: string; fr: string }> = {
       en: "Motion study: an original silhouette of a galloping horse, drawn with ASCII characters.",
       fr: "Étude de mouvement : silhouette originale d’un cheval au galop, dessinée en caractères ASCII.",
     },
+  "Estudio de movimiento: figuras geométricas que se construyen, se desplazan y se recortan en bucle, dibujadas con caracteres tipográficos.": {
+    en: "Motion study: geometric shapes built, shifted and cut in a loop, drawn with typographic characters.",
+    fr: "Étude de mouvement : des formes géométriques se construisent, se déplacent et se découpent en boucle, dessinées avec des caractères typographiques.",
+  },
+  "Estudio de movimiento: un caballo galopando descompuesto en seis fotogramas dibujados con caracteres tipográficos. El ciclo se repite para avanzar.": {
+    en: "Motion study: a galloping horse broken down into six frames drawn with typographic characters. The cycle repeats to move forward.",
+    fr: "Étude de mouvement : un cheval au galop décomposé en six images dessinées avec des caractères typographiques. Le cycle se répète pour avancer.",
+  },
   "Movimiento secuencial → retícula tipográfica": {
     en: "Sequential motion → typographic grid",
     fr: "Mouvement séquentiel → grille typographique",

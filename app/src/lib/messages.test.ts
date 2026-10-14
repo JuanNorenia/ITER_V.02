@@ -75,9 +75,23 @@ const contactOptionsAndErrors = [
   "Necesitamos tu autorización para tratamiento de datos.",
   "El envío fue demasiado rápido. Inténtalo de nuevo.",
   "Recibimos varios envíos seguidos. Espera unos minutos e inténtalo de nuevo.",
+  "El nombre no admite caracteres de control.",
+  "La empresa no admite caracteres de control.",
+  "El mensaje contiene caracteres de control no permitidos.",
+  "El formulario necesita una API configurada para enviar consultas. No se ha enviado tu mensaje. Inténtalo más tarde.",
+  "El servicio de contacto no está configurado. No se ha enviado tu consulta. Inténtalo más tarde.",
+  "El proveedor tardó demasiado en responder. No pudimos confirmar el envío. Inténtalo de nuevo.",
+  "No pudimos confirmar el envío con el proveedor de correo. Inténtalo de nuevo más tarde.",
+  "No pudimos confirmar el envío de tu consulta. Inténtalo de nuevo más tarde.",
+  "Revisa los datos del formulario e inténtalo de nuevo.",
+  "El formulario se envió demasiado rápido o ha caducado. Vuelve a abrirlo e inténtalo de nuevo.",
+  "Esta consulta ya se ha enviado o está en proceso. Espera unos minutos antes de repetirla.",
 ];
 
 const ownedSources = [
+  "sections/Header.tsx",
+  "sections/Footer.tsx",
+  "sections/Contact.tsx",
   "sections/Hero.tsx",
   "sections/Friction.tsx",
   "sections/Services.tsx",
@@ -89,8 +103,15 @@ const ownedSources = [
   "components/ScrollHud.tsx",
   "components/Marquee.tsx",
   "components/Cursor.tsx",
+  "components/AsciiStudy.tsx",
+  "components/HorseStrip.tsx",
+  "components/LanguageSwitcher.tsx",
+  "components/SiteLayout.tsx",
+  "pages/ContactPage.tsx",
   "pages/Home.tsx",
 ];
+
+const combinedMessages = { ...messages, ...asciiMessages };
 
 function inspectCopy(path: string) {
   const source = ts.createSourceFile(
@@ -102,6 +123,16 @@ function inspectCopy(path: string) {
   );
   const keys: string[] = [];
   const untranslated: string[] = [];
+  const technicalLabels = new Set([
+    "ITER",
+    "Build",
+    "Shift",
+    "Cut",
+    "Re",
+    "Loop",
+    "F01/24",
+    "F01/06",
+  ]);
   const visibleAttributes = new Set([
     "aria-label",
     "title",
@@ -128,7 +159,9 @@ function inspectCopy(path: string) {
     }
     if (ts.isJsxText(node)) {
       const text = node.text.replace(/\s+/g, " ").trim();
-      if (/\p{L}/u.test(text)) untranslated.push(text);
+      if (/\p{L}/u.test(text) && !technicalLabels.has(text)) {
+        untranslated.push(text);
+      }
     }
     if (
       ts.isJsxAttribute(node) &&
@@ -145,11 +178,12 @@ function inspectCopy(path: string) {
 }
 
 function expectTranslated(key: string) {
-  expect(Object.hasOwn(messages, key), `Missing Spanish key: ${key}`).toBe(
-    true
-  );
-  expect(translateMessage(key, "en")).not.toBe(key);
-  expect(translateMessage(key, "fr")).not.toBe(key);
+  expect(
+    Object.hasOwn(combinedMessages, key),
+    `Missing Spanish key: ${key}`
+  ).toBe(true);
+  expect(translateMessage(key, "en", combinedMessages)).not.toBe(key);
+  expect(translateMessage(key, "fr", combinedMessages)).not.toBe(key);
 }
 
 describe("ES/EN/FR messages", () => {
@@ -180,6 +214,15 @@ describe("ES/EN/FR messages", () => {
         "CUT",
         "RE",
         "S.01",
+        "P.01",
+        "F01",
+        "F01/24",
+        "F01/06",
+        "Build",
+        "Shift",
+        "Cut",
+        "Re",
+        "Loop",
         "toString",
         "constructor",
         "__proto__",
@@ -197,6 +240,18 @@ describe("ES/EN/FR messages", () => {
 
   it("covers all current contact options, validation and public server errors", () => {
     for (const key of contactOptionsAndErrors) expectTranslated(key);
+  });
+
+  it("translates the language switcher group and every language name", () => {
+    for (const key of ["Idioma", "Español", "Inglés", "Francés"]) {
+      expectTranslated(key);
+    }
+    expect(translateMessage("Idioma", "en", combinedMessages)).toBe(
+      "Language"
+    );
+    expect(translateMessage("Idioma", "fr", combinedMessages)).toBe(
+      "Langue"
+    );
   });
 
   it("composes the hero naturally in all three languages", () => {
@@ -218,13 +273,20 @@ describe("ES/EN/FR messages", () => {
   });
 
   it("supports the shared ASCII dictionary without translating phase tags", () => {
-    const combined = { ...messages, ...asciiMessages };
     for (const [key, translations] of Object.entries(asciiMessages)) {
-      expect(translateMessage(key, "es", combined)).toBe(key);
-      expect(translateMessage(key, "en", combined)).toBe(translations.en);
-      expect(translateMessage(key, "fr", combined)).toBe(translations.fr);
+      expect(translateMessage(key, "es", combinedMessages)).toBe(key);
+      expect(translateMessage(key, "en", combinedMessages)).toBe(
+        translations.en
+      );
+      expect(translateMessage(key, "fr", combinedMessages)).toBe(
+        translations.fr
+      );
     }
-    expect(translateMessage("BUILD", "fr", combined)).toBe("BUILD");
+    expect(translateMessage("BUILD", "fr", combinedMessages)).toBe("BUILD");
+    for (const label of ["Build", "Shift", "Cut", "Re", "Loop", "F01"]) {
+      expect(translateMessage(label, "en", combinedMessages)).toBe(label);
+      expect(translateMessage(label, "fr", combinedMessages)).toBe(label);
+    }
   });
 
   it.each(ownedSources)("covers rendered and accessible copy in %s", path => {

@@ -24,15 +24,16 @@ export const BUDGET_RANGES = [
   { value: "mas-40m", label: "Más de $40 M COP" },
 ] as const;
 
-const needValues = NEED_TYPES.map((n) => n.value) as [string, ...string[]];
-const budgetValues = BUDGET_RANGES.map((b) => b.value) as [string, ...string[]];
+const needValues = NEED_TYPES.map(n => n.value) as [string, ...string[]];
+const budgetValues = BUDGET_RANGES.map(b => b.value) as [string, ...string[]];
 
-export const contactSchema = z.object({
+export const contactSchema = z.strictObject({
   nombre: z
     .string()
     .trim()
     .min(2, "Cuéntanos tu nombre (mínimo 2 caracteres).")
-    .max(80, "El nombre es demasiado largo."),
+    .max(80, "El nombre es demasiado largo.")
+    .regex(/^[^\p{Cc}]*$/u, "El nombre no admite caracteres de control."),
   email: z
     .string()
     .trim()
@@ -43,13 +44,18 @@ export const contactSchema = z.object({
     .string()
     .trim()
     .max(120, "El nombre de la empresa es demasiado largo.")
+    .regex(/^[^\p{Cc}]*$/u, "La empresa no admite caracteres de control.")
     .optional()
     .or(z.literal("")),
   mensaje: z
     .string()
     .trim()
     .min(10, "Cuéntanos un poco más (mínimo 10 caracteres).")
-    .max(2000, "Máximo 2000 caracteres. Lo esencial es suficiente."),
+    .max(2000, "Máximo 2000 caracteres. Lo esencial es suficiente.")
+    .refine(
+      value => !/\p{Cc}/u.test(value.replace(/[\t\r\n]/gu, "")),
+      "El mensaje contiene caracteres de control no permitidos."
+    ),
   tipoNecesidad: z.enum(needValues).optional().or(z.literal("")),
   presupuesto: z.enum(budgetValues).optional().or(z.literal("")),
   consentimiento: z.literal(true, {
@@ -65,6 +71,6 @@ export type ContactInput = z.infer<typeof contactSchema>;
 
 export type ContactResult = {
   ok: true;
-  /** true si además de almacenarse se reenvió al proveedor configurado */
-  forwarded: boolean;
+  /** El proveedor configurado confirmó la recepción; no se persisten leads. */
+  forwarded: true;
 };

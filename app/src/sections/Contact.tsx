@@ -3,6 +3,9 @@ import { Reveal } from "@/components/Reveal";
 import { useInView } from "@/hooks/useInView";
 import { site } from "@/config/site";
 import { trpc } from "@/providers/trpc";
+import { useLocale } from "@/providers/LocaleProvider";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { contactFailureMessage, contactUnavailableMessage, publicContactError } from "@/lib/contactErrors";
 import {
   contactSchema,
   NEED_TYPES,
@@ -14,17 +17,19 @@ type Status = "idle" | "sending" | "success" | "error";
 type Errors = Partial<Record<keyof ContactInput, string>>;
 
 const inputCls =
-  "w-full border-b border-ink/30 bg-transparent py-3 font-display text-lg outline-none transition-colors placeholder:text-line focus:border-black";
+  "min-w-0 w-full border-b border-ink/30 bg-transparent py-3 font-display text-lg outline-none transition-colors placeholder:text-line focus:border-black";
 const labelCls = "mono-label text-smoke";
 const errorCls = "mono-data mt-2 text-red";
 
 /**
- * SECCIÓN 09 — FORMULARIO DE CONTACTO
- * Envío real vía tRPC → validación zod en cliente y servidor →
- * almacenamiento del lead + reenvío opcional si hay proveedor configurado.
+ * Contacto independiente: validación compartida y confirmación real del proveedor.
+ * Los datos del formulario permanecen en memoria durante esta interacción.
  */
-export default function Contact() {
+export default function Contact({ initialNeed = "" }: { initialNeed?: string }) {
+  const { t } = useLocale();
+  const reduced = usePrefersReducedMotion();
   const ref = useInView<HTMLElement>(0.06);
+  const successRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const [serverMsg, setServerMsg] = useState("");
@@ -36,7 +41,7 @@ export default function Contact() {
     email: "",
     empresa: "",
     mensaje: "",
-    tipoNecesidad: "",
+    tipoNecesidad: NEED_TYPES.some(need => need.value === initialNeed) ? initialNeed : "",
     presupuesto: "",
     consentimiento: false,
     website: "", // honeypot
@@ -44,15 +49,9 @@ export default function Contact() {
 
   const mutation = trpc.contact.submit.useMutation();
 
-  // Las filas de «Qué hacemos» preseleccionan el tipo de necesidad
   useEffect(() => {
-    const onNeed = (e: Event) => {
-      const id = (e as CustomEvent<string>).detail;
-      setValues((v) => ({ ...v, tipoNecesidad: id }));
-    };
-    window.addEventListener("iter:need", onNeed);
-    return () => window.removeEventListener("iter:need", onNeed);
-  }, []);
+    if (status === "success") successRef.current?.focus();
+  }, [status]);
 
   const set =
     (key: keyof typeof values) =>
@@ -75,6 +74,7 @@ export default function Contact() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (sendingRef.current) return;
+    const form = e.currentTarget;
 
     const payload = { ...values, t: mountedAt.current };
     const parsed = contactSchema.safeParse(payload);
@@ -85,8 +85,18 @@ export default function Contact() {
         if (!next[key]) next[key] = issue.message;
       }
       setErrors(next);
-      const first = document.querySelector("[data-invalid='true']");
-      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const key = Object.keys(next)[0];
+      const first = key ? form.elements.namedItem(key) : null;
+      if (first instanceof HTMLElement) {
+        first.focus({ preventScroll: true });
+        first.scrollIntoView({ behavior: reduced ? "instant" : "smooth", block: "center" });
+      }
+      return;
+    }
+
+    if (!site.canSubmitContact) {
+      setStatus("error");
+      setServerMsg(contactUnavailableMessage);
       return;
     }
 
@@ -94,15 +104,14 @@ export default function Contact() {
     setStatus("sending");
     setServerMsg("");
     try {
-      await mutation.mutateAsync(parsed.data);
+      const result = await mutation.mutateAsync(parsed.data);
+      if (result.ok !== true || result.forwarded !== true) {
+        throw new Error(contactFailureMessage);
+      }
       setStatus("success");
     } catch (err) {
       setStatus("error");
-      setServerMsg(
-        err instanceof Error && err.message
-          ? err.message
-          : "No pudimos enviar tu consulta. Inténtalo de nuevo.",
-      );
+      setServerMsg(publicContactError(err));
     } finally {
       sendingRef.current = false;
     }
@@ -120,6 +129,7 @@ export default function Contact() {
       website: "",
     });
     setErrors({});
+    setServerMsg("");
     mountedAt.current = Date.now();
     setStatus("idle");
   };
@@ -128,32 +138,32 @@ export default function Contact() {
     <section
       id="contacto"
       ref={ref}
-      className="rv-observe scroll-mt-16 px-5 py-20 sm:px-8 lg:py-28"
+      className="rv-observe relative scroll-mt-16 px-5 pb-20 pt-8 sm:px-8 lg:pb-28 lg:pt-12"
       aria-labelledby="contacto-title"
     >
       <div className="grid grid-cols-1 gap-14 lg:grid-cols-12">
-        <div className="lg:col-span-5">
+        <div className="min-w-0 self-start bg-paper p-4 lg:col-span-5 lg:p-6">
           <Reveal variant="up">
             <p className="mono-label text-smoke">
-              <span className="text-red">07</span> / Contacto
+              <span className="text-red">07</span> / {t("Contacto")}
             </p>
           </Reveal>
           <Reveal variant="line" className="mt-6">
-            <h2 id="contacto-title" className="display-section">
-              Empecemos por el problema.
-            </h2>
+            <h1 id="contacto-title" className="display-section">
+              {t("Empecemos por el problema.")}
+            </h1>
           </Reveal>
           <Reveal variant="up" delay={140} className="mt-6 max-w-md">
             <p className="body-text text-smoke">
-              Cuéntanos qué está pasando. Nosotros empezamos por entenderlo.
+              {t("Cuéntanos qué está pasando. Nosotros empezamos por entenderlo.")}
             </p>
           </Reveal>
           {site.contactEmail && (
             <Reveal variant="up" delay={200} className="mt-8">
-              <p className="mono-label text-smoke">También por correo</p>
+              <p className="mono-label text-smoke">{t("También por correo")}</p>
               <a
                 href={`mailto:${site.contactEmail}`}
-                className="link-line display-sub mt-2 inline-block"
+                className="link-line display-sub mt-2 inline-block break-all"
               >
                 {site.contactEmail}
               </a>
@@ -161,39 +171,38 @@ export default function Contact() {
           )}
         </div>
 
-        <div className="lg:col-span-7">
+        <div className="min-w-0 lg:col-span-7">
           {status === "success" ? (
             <div
+              ref={successRef}
               role="status"
-              className="flex min-h-[420px] flex-col justify-center border border-black p-8 lg:p-12"
+              tabIndex={-1}
+              className="flex min-h-[420px] min-w-0 flex-col justify-center border border-black bg-paper p-5 sm:p-8 lg:p-12"
             >
-              <p className="display-section">Recibido.</p>
+              <p className="display-section">{t("Recibido.")}</p>
               <p className="body-text mt-6 max-w-md text-smoke">
-                Gracias por contarnos qué necesitas. Revisaremos tu mensaje
-                para entender cómo podemos ayudarte.
+                {t("Gracias por contarnos qué necesitas. Revisaremos tu mensaje para entender cómo podemos ayudarte.")}
               </p>
-              <p className="mono-data mt-6 text-smoke">
-                Tu consulta quedó registrada. Te respondemos al correo que
-                compartiste.
-              </p>
+
               <button
                 type="button"
                 onClick={reset}
-                className="btn-sweep btn-sweep--paper mono-label mt-10 inline-flex h-12 w-fit items-center border border-black bg-black px-7 text-white"
+                className="btn-sweep btn-sweep--paper mono-label mt-10 inline-flex min-h-12 w-fit max-w-full items-center border border-black bg-black px-7 py-3 text-white"
               >
-                Enviar otra consulta
+                {t("Enviar otra consulta")}
               </button>
             </div>
           ) : (
             <Reveal variant="up" delay={120}>
-              <form onSubmit={onSubmit} noValidate className="space-y-8">
+              <form onSubmit={onSubmit} noValidate aria-busy={status === "sending"} className="border border-line bg-paper p-5 sm:p-8">
+                <fieldset disabled={status === "sending"} className="min-w-0 space-y-8">
                 {/* Honeypot: invisible para humanos, irresistible para bots */}
                 <div
                   aria-hidden="true"
                   className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden"
                 >
                   <label>
-                    Sitio web
+                    {t("Sitio web")}
                     <input
                       type="text"
                       name="website"
@@ -208,10 +217,13 @@ export default function Contact() {
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                   <div>
                     <label htmlFor="f-nombre" className={labelCls}>
-                      Nombre *
+                      {t("Nombre *")}
                     </label>
                     <input
                       id="f-nombre"
+                      name="nombre"
+                      required
+                      maxLength={80}
                       type="text"
                       autoComplete="name"
                       value={values.nombre}
@@ -223,16 +235,19 @@ export default function Contact() {
                     />
                     {errors.nombre && (
                       <p id="e-nombre" role="alert" className={errorCls}>
-                        {errors.nombre}
+                        {t(errors.nombre)}
                       </p>
                     )}
                   </div>
                   <div>
                     <label htmlFor="f-email" className={labelCls}>
-                      Correo electrónico *
+                      {t("Correo electrónico *")}
                     </label>
                     <input
                       id="f-email"
+                      name="email"
+                      required
+                      maxLength={120}
                       type="email"
                       autoComplete="email"
                       value={values.email}
@@ -244,7 +259,7 @@ export default function Contact() {
                     />
                     {errors.email && (
                       <p id="e-email" role="alert" className={errorCls}>
-                        {errors.email}
+                        {t(errors.email)}
                       </p>
                     )}
                   </div>
@@ -253,31 +268,39 @@ export default function Contact() {
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                   <div>
                     <label htmlFor="f-empresa" className={labelCls}>
-                      Empresa o proyecto
+                      {t("Empresa o proyecto")}
                     </label>
                     <input
                       id="f-empresa"
+                      name="empresa"
+                      maxLength={120}
                       type="text"
                       autoComplete="organization"
                       value={values.empresa}
                       onChange={set("empresa")}
                       className={inputCls}
+                      aria-invalid={!!errors.empresa}
+                      aria-describedby={errors.empresa ? "e-empresa" : undefined}
                     />
+                    {errors.empresa && (
+                      <p id="e-empresa" role="alert" className={errorCls}>{t(errors.empresa)}</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="f-tipo" className={labelCls}>
-                      Tipo de necesidad
+                      {t("Tipo de necesidad")}
                     </label>
                     <select
                       id="f-tipo"
+                      name="tipoNecesidad"
                       value={values.tipoNecesidad}
                       onChange={set("tipoNecesidad")}
                       className={`${inputCls} cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22%3E%3Cpath d=%22M1 1l5 5 5-5%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%221.5%22/%3E%3C/svg%3E')] bg-[position:right_0.25rem_center] bg-no-repeat pr-8`}
                     >
-                      <option value="">Selecciona una opción</option>
+                      <option value="">{t("Selecciona una opción")}</option>
                       {NEED_TYPES.map((n) => (
                         <option key={n.value} value={n.value}>
-                          {n.label}
+                          {t(n.label)}
                         </option>
                       ))}
                     </select>
@@ -286,14 +309,17 @@ export default function Contact() {
 
                 <div>
                   <label htmlFor="f-mensaje" className={labelCls}>
-                    ¿Qué necesitas resolver? *
+                    {t("¿Qué necesitas resolver? *")}
                   </label>
                   <textarea
                     id="f-mensaje"
+                    name="mensaje"
+                    required
+                    maxLength={2000}
                     rows={5}
                     value={values.mensaje}
                     onChange={set("mensaje")}
-                    placeholder="Describe el problema, no la solución. Eso es nuestro trabajo."
+                    placeholder={t("Describe el problema, no la solución. Eso es nuestro trabajo.")}
                     className={`${inputCls} resize-y`}
                     data-invalid={!!errors.mensaje}
                     aria-invalid={!!errors.mensaje}
@@ -301,25 +327,26 @@ export default function Contact() {
                   />
                   {errors.mensaje && (
                     <p id="e-mensaje" role="alert" className={errorCls}>
-                      {errors.mensaje}
+                      {t(errors.mensaje)}
                     </p>
                   )}
                 </div>
 
                 <div>
                   <label htmlFor="f-presupuesto" className={labelCls}>
-                    Presupuesto estimado
+                    {t("Presupuesto estimado")}
                   </label>
                   <select
                     id="f-presupuesto"
+                    name="presupuesto"
                     value={values.presupuesto}
                     onChange={set("presupuesto")}
                     className={`${inputCls} cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22%3E%3Cpath d=%22M1 1l5 5 5-5%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%221.5%22/%3E%3C/svg%3E')] bg-[position:right_0.25rem_center] bg-no-repeat pr-8`}
                   >
-                    <option value="">Selecciona un rango</option>
+                    <option value="">{t("Selecciona un rango")}</option>
                     {BUDGET_RANGES.map((b) => (
                       <option key={b.value} value={b.value}>
-                        {b.label}
+                        {t(b.label)}
                       </option>
                     ))}
                   </select>
@@ -329,6 +356,8 @@ export default function Contact() {
                   <label className="flex cursor-pointer items-start gap-3">
                     <input
                       type="checkbox"
+                      name="consentimiento"
+                      required
                       checked={values.consentimiento}
                       onChange={set("consentimiento")}
                       className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer appearance-none border border-ink bg-transparent transition-colors checked:border-red checked:bg-red"
@@ -339,22 +368,20 @@ export default function Contact() {
                       }
                     />
                     <span className="body-text text-sm">
-                      Autorizo el tratamiento de mis datos personales para
-                      responder esta solicitud y gestionar el contacto, según
-                      la{" "}
+                      {t("Autorizo el tratamiento de mis datos personales para responder esta solicitud y gestionar el contacto, según la")}{" "}
                       <button
                         type="button"
                         onClick={openPrivacy}
                         className="link-line font-medium underline"
                       >
-                        política de tratamiento de datos
+                        {t("política de tratamiento de datos")}
                       </button>
                       . *
                     </span>
                   </label>
                   {errors.consentimiento && (
                     <p id="e-consent" role="alert" className={errorCls}>
-                      {errors.consentimiento}
+                      {t(errors.consentimiento)}
                     </p>
                   )}
                 </div>
@@ -364,8 +391,8 @@ export default function Contact() {
                     role="alert"
                     className="border border-black bg-mist p-4"
                   >
-                    <p className="mono-label">No se pudo enviar</p>
-                    <p className="body-text mt-2 text-sm">{serverMsg}</p>
+                    <p className="mono-label">{t("No se pudo enviar")}</p>
+                    <p className="body-text mt-2 text-sm">{t(serverMsg)}</p>
                   </div>
                 )}
 
@@ -373,17 +400,16 @@ export default function Contact() {
                   type="submit"
                   disabled={status === "sending"}
                   data-magnetic
-                  data-cursor="Enviar"
-                  className="btn-sweep btn-sweep--red mono-label inline-flex h-14 w-full items-center justify-center border border-black bg-black px-9 text-white transition-opacity disabled:opacity-60 sm:w-auto"
+                  data-cursor={t("Enviar")}
+                  className="btn-sweep btn-sweep--red mono-label inline-flex min-h-14 w-full max-w-full items-center justify-center border border-black bg-black px-7 py-4 text-center text-white transition-opacity disabled:opacity-60 sm:w-auto"
                 >
-                  {status === "sending" ? "Enviando…" : "Enviar mi consulta ↗"}
+                  {t(status === "sending" ? "Enviando…" : "Enviar mi consulta ↗")}
                 </button>
 
                 <p className="mono-data text-smoke">
-                  Tus datos se usan únicamente para responder tu solicitud y
-                  gestionar el contacto. Ninguna casilla viene marcada por
-                  defecto.
+                  {t("Tus datos se usan únicamente para responder tu solicitud y gestionar el contacto. Ninguna casilla viene marcada por defecto.")}
                 </p>
+                </fieldset>
               </form>
             </Reveal>
           )}

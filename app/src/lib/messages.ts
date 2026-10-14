@@ -577,6 +577,50 @@ export const messages: Record<string, { en: string; fr: string }> = {
       en: "Data is transmitted encrypted and stored with restricted access. System credentials and keys are never exposed in the browser.",
       fr: "Les données sont transmises de manière chiffrée et conservées avec un accès restreint. Les identifiants et les clés du système ne sont jamais exposés dans le navigateur.",
     },
+  "El formulario necesita una API configurada para enviar consultas. No se ha enviado tu mensaje. Inténtalo más tarde.": {
+    en: "The contact form needs a configured API to send enquiries. Your message has not been sent. Please try again later.",
+    fr: "Le formulaire nécessite une API configurée pour envoyer les demandes. Votre message n’a pas été envoyé. Réessayez plus tard.",
+  },
+  "El servicio de contacto no está configurado. No se ha enviado tu consulta. Inténtalo más tarde.": {
+    en: "The contact service is not configured. Your enquiry has not been sent. Please try again later.",
+    fr: "Le service de contact n’est pas configuré. Votre demande n’a pas été envoyée. Réessayez plus tard.",
+  },
+  "El proveedor tardó demasiado en responder. No pudimos confirmar el envío. Inténtalo de nuevo.": {
+    en: "The provider took too long to respond. We could not confirm the submission. Please try again.",
+    fr: "Le fournisseur a mis trop de temps à répondre. Nous n’avons pas pu confirmer l’envoi. Réessayez.",
+  },
+  "No pudimos confirmar el envío con el proveedor de correo. Inténtalo de nuevo más tarde.": {
+    en: "We could not confirm the submission with the email provider. Please try again later.",
+    fr: "Nous n’avons pas pu confirmer l’envoi auprès du fournisseur de messagerie. Réessayez plus tard.",
+  },
+  "No pudimos confirmar el envío de tu consulta. Inténtalo de nuevo más tarde.": {
+    en: "We could not confirm that your enquiry was sent. Please try again later.",
+    fr: "Nous n’avons pas pu confirmer l’envoi de votre demande. Réessayez plus tard.",
+  },
+  "Revisa los datos del formulario e inténtalo de nuevo.": {
+    en: "Check the form details and try again.",
+    fr: "Vérifiez les informations du formulaire et réessayez.",
+  },
+  "El formulario se envió demasiado rápido o ha caducado. Vuelve a abrirlo e inténtalo de nuevo.": {
+    en: "The form was submitted too quickly or has expired. Reopen it and try again.",
+    fr: "Le formulaire a été envoyé trop rapidement ou a expiré. Rouvrez-le et réessayez.",
+  },
+  "Esta consulta ya se ha enviado o está en proceso. Espera unos minutos antes de repetirla.": {
+    en: "This enquiry has already been sent or is being processed. Wait a few minutes before trying again.",
+    fr: "Cette demande a déjà été envoyée ou est en cours de traitement. Attendez quelques minutes avant de réessayer.",
+  },
+  "El nombre no admite caracteres de control.": {
+    en: "The name must not contain control characters.",
+    fr: "Le nom ne doit pas contenir de caractères de contrôle.",
+  },
+  "La empresa no admite caracteres de control.": {
+    en: "The company name must not contain control characters.",
+    fr: "Le nom de l’entreprise ne doit pas contenir de caractères de contrôle.",
+  },
+  "El mensaje contiene caracteres de control no permitidos.": {
+    en: "The message contains unsupported control characters.",
+    fr: "Le message contient des caractères de contrôle non autorisés.",
+  },
 };
 
 export function translateMessage(

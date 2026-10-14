@@ -39,10 +39,19 @@ describe("contact.submit", () => {
   });
 
   it("rejects missing configuration in Spanish without needing DB or AI credentials", async () => {
-    vi.stubEnv("CONTACT_PROVIDER", "");
-    vi.stubEnv("DATABASE_URL", "");
-    vi.stubEnv("APP_ID", "");
-    vi.stubEnv("APP_SECRET", "");
+    for (const key of [
+      "CONTACT_PROVIDER",
+      "CONTACT_FORWARD_URL",
+      "RESEND_API_KEY",
+      "CONTACT_FROM_EMAIL",
+      "CONTACT_TO_EMAIL",
+      "CONTACT_FROM",
+      "CONTACT_TO",
+      "DATABASE_URL",
+      "APP_ID",
+      "APP_SECRET",
+    ])
+      vi.stubEnv(key, "");
     const caller = createContactRouter({ now: () => now }).createCaller({
       req: new Request("http://localhost/api/trpc"),
       resHeaders: new Headers(),
@@ -106,6 +115,32 @@ describe("contact.submit", () => {
       message:
         "No pudimos confirmar el envío de tu consulta. Inténtalo de nuevo más tarde.",
     });
+  });
+
+  it.each([2000, 24 * 60 * 60 * 1000])(
+    "accepts the inclusive form age boundary of %i ms",
+    async age => {
+      const { caller, send } = setup();
+      await expect(
+        caller().submit({ ...validContact(now), t: now - age })
+      ).resolves.toEqual({ ok: true, forwarded: true });
+      expect(send).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it("does not expose arbitrary input keys in validation errors", async () => {
+    const { caller, send } = setup();
+    await expect(
+      caller().submit({
+        ...validContact(now),
+        "private-client-key@example.com": "private-client-value",
+      } as Parameters<ReturnType<typeof caller>["submit"]>[0])
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Revisa los datos del formulario e inténtalo de nuevo.",
+      cause: undefined,
+    });
+    expect(send).not.toHaveBeenCalled();
   });
 
   it("counts rejected validation attempts toward the limit", async () => {

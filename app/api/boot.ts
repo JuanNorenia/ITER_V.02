@@ -1,23 +1,43 @@
 import { Hono } from "hono";
-import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
 import { env } from "./lib/env";
+import { apiCors, parseAllowedOrigins } from "./lib/api-cors";
+import { getClientIp } from "./lib/client-ip";
+import { requestBodyLimit } from "./lib/request-body";
+import { createContactProvider } from "./providers/contact";
 
-const app = new Hono<{ Bindings: HttpBindings }>();
+export function createApiApp() {
+  const app = new Hono<{ Bindings: HttpBindings }>();
 
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
-app.use("/api/trpc/*", async (c) => {
-  return fetchRequestHandler({
-    endpoint: "/api/trpc",
-    req: c.req.raw,
-    router: appRouter,
-    createContext,
+  app.use("/api/*", apiCors(parseAllowedOrigins()));
+  app.use("/api/*", requestBodyLimit());
+  app.get("/api/health", c => {
+    let configured = false;
+    try {
+      createContactProvider();
+      configured = true;
+    } catch {
+      // Liveness no depende del proveedor; se informa su configuración sin secretos.
+    }
+    return c.json({ ok: true, contact: { configured } });
   });
-});
-app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
+  app.use("/api/trpc/*", async c => {
+    return fetchRequestHandler({
+      endpoint: "/api/trpc",
+      req: c.req.raw,
+      router: appRouter,
+      createContext: opts => createContext(opts, getClientIp(c)),
+    });
+  });
+  app.all("/api/*", c => c.json({ error: "Not Found" }, 404));
+
+  return app;
+}
+
+const app = createApiApp();
 
 export default app;
 

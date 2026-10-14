@@ -9,8 +9,16 @@ function required(name: string): string {
 }
 
 export const env = {
-  appId: required("APP_ID"),
-  appSecret: required("APP_SECRET"),
-  isProduction: process.env.NODE_ENV === "production",
-  databaseUrl: required("DATABASE_URL"),
+  get appId() {
+    return required("APP_ID");
+  },
+  get appSecret() {
+    return required("APP_SECRET");
+  },
+  get isProduction() {
+    return process.env.NODE_ENV === "production";
+  },
+  get databaseUrl() {
+    return required("DATABASE_URL");
+  },
 };
