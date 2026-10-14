@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router";
-import { useLocale } from "@/providers/LocaleProvider";
 
 /**
  * HUD DE RECORRIDO
@@ -19,20 +17,17 @@ const SECTIONS = [
   { id: "principios", index: "04", label: "Cómo pensamos" },
   { id: "para-quien", index: "05", label: "Para quién" },
   { id: "conversacion", index: "06", label: "Conversación" },
+  { id: "contacto", index: "07", label: "Contacto" },
 ] as const;
 
 export default function ScrollHud() {
-  const { pathname } = useLocation();
-  const { locale, t } = useLocale();
   const barRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
-  const [current, setCurrent] = useState<(typeof SECTIONS)[number]>(
-    SECTIONS[0]
-  );
+  const [current, setCurrent] =
+    useState<(typeof SECTIONS)[number]>(SECTIONS[0]);
 
   // Progreso total: barra superior + riel lateral
   useEffect(() => {
-    if (pathname !== "/") return;
     let raf = 0;
     const update = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -56,29 +51,26 @@ export default function ScrollHud() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [pathname, locale]);
+  }, []);
 
   // Sección activa
   useEffect(() => {
-    if (pathname !== "/") return;
     const io = new IntersectionObserver(
-      entries => {
+      (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
-          const found = SECTIONS.find(s => s.id === entry.target.id);
+          const found = SECTIONS.find((s) => s.id === entry.target.id);
           if (found) setCurrent(found);
         }
       },
-      { rootMargin: "-40% 0px -50% 0px" }
+      { rootMargin: "-40% 0px -50% 0px" },
     );
-    SECTIONS.forEach(s => {
+    SECTIONS.forEach((s) => {
       const el = document.getElementById(s.id);
       if (el) io.observe(el);
     });
     return () => io.disconnect();
-  }, [pathname, locale]);
-
-  if (pathname !== "/") return null;
+  }, []);
 
   return (
     <>
@@ -109,7 +101,7 @@ export default function ScrollHud() {
         aria-hidden="true"
       >
         <span className="tabular-nums [writing-mode:vertical-rl]">
-          {current.index} / 06 — {t(current.label)}
+          {current.index} / 07 — {current.label}
         </span>
       </div>
     </>

@@ -1,13 +1,6 @@
-import { Link } from "react-router";
 import { Reveal } from "@/components/Reveal";
-import {
-  GlyphBuild,
-  GlyphCut,
-  GlyphForm,
-  GlyphShift,
-} from "@/components/Glyphs";
+import { GlyphBuild, GlyphCut, GlyphForm, GlyphShift } from "@/components/Glyphs";
 import { useInView } from "@/hooks/useInView";
-import { useLocale } from "@/providers/LocaleProvider";
 
 const areas = [
   {
@@ -46,8 +39,11 @@ const areas = [
  * el formulario de contacto llega con el tipo de necesidad preseleccionado.
  */
 export default function Services() {
-  const { t } = useLocale();
   const ref = useInView<HTMLElement>(0.08);
+
+  const choose = (id: string) => {
+    window.dispatchEvent(new CustomEvent("iter:need", { detail: id }));
+  };
 
   return (
     <section
@@ -58,33 +54,33 @@ export default function Services() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">02</span> / {t("Qué hacemos")}
+          <span className="text-red">02</span> / Qué hacemos
         </p>
       </Reveal>
 
       <Reveal variant="line" className="mt-6 max-w-6xl">
         <h2 id="services-title" className="display-section">
-          {t("No partimos de una tecnología. Partimos del problema.")}
+          No partimos de una tecnología. Partimos del problema.
         </h2>
       </Reveal>
 
       <Reveal variant="up" delay={140} className="mt-8 max-w-2xl">
         <p className="body-text">
-          {t(
-            "Cada problema necesita una solución diferente. Por eso no vendemos una única respuesta para todos los casos."
-          )}
+          Cada problema necesita una solución diferente. Por eso no vendemos
+          una única respuesta para todos los casos.
         </p>
       </Reveal>
 
       <div className="mt-14" role="list">
         {areas.map((a, i) => (
           <Reveal key={a.id} variant="up" delay={i * 100}>
-            <Link
-              to={`/contacto?need=${encodeURIComponent(a.id)}`}
+            <a
+              href="#contacto"
+              onClick={() => choose(a.id)}
               role="listitem"
-              data-cursor={t("Consultar")}
-              className="group relative block border-t border-ink/15 py-8 outline-none transition-colors focus-visible:bg-black focus-visible:text-white lg:py-9"
-              aria-label={`${t(a.title)}. ${t("Consultar sobre esta área")}`}
+              data-cursor="Consultar"
+              className="group relative block border-t border-ink/15 py-8 outline-none transition-colors focus-visible:bg-black lg:py-9"
+              aria-label={`${a.title}. Consultar sobre esta área`}
             >
               <div
                 className="pointer-events-none absolute inset-0 origin-bottom scale-y-0 bg-black transition-transform duration-500 ease-iter group-hover:scale-y-100"
@@ -95,12 +91,10 @@ export default function Services() {
                   {a.index}
                 </span>
                 <a.Glyph className="col-span-2 h-9 w-9 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:text-red sm:col-span-1 sm:h-10 sm:w-10" />
-                <div className="col-span-8 min-w-0 sm:col-span-9 lg:col-span-8">
-                  <h3 className="display-sub break-words uppercase">
-                    {t(a.title)}
-                  </h3>
+                <div className="col-span-8 sm:col-span-9 lg:col-span-8">
+                  <h3 className="display-sub uppercase">{a.title}</h3>
                   <p className="body-text mt-2 max-w-2xl text-smoke transition-colors duration-300 group-hover:text-white/70">
-                    {t(a.text)}
+                    {a.text}
                   </p>
                 </div>
                 <span
@@ -110,7 +104,7 @@ export default function Services() {
                   ↗
                 </span>
               </div>
-            </Link>
+            </a>
           </Reveal>
         ))}
         <div className="border-t border-ink/15" />
@@ -118,9 +112,8 @@ export default function Services() {
 
       <Reveal variant="up" delay={100} className="mt-8">
         <p className="mono-data max-w-2xl text-smoke">
-          {t(
-            "Áreas de capacidad, no paquetes cerrados. Cada caso se evalúa antes de prometer un resultado."
-          )}
+          Áreas de capacidad, no paquetes cerrados. Cada caso se evalúa antes
+          de prometer un resultado.
         </p>
       </Reveal>
     </section>

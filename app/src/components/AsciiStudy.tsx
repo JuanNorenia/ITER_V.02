@@ -1,180 +1,290 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { fitAsciiGrid, idleAsciiPointer } from "@/lib/asciiGrid";
-import { ASCII_PHASES, asciiPhaseAt, renderAsciiStudy } from "@/lib/asciiStudy";
-import type { AsciiPhase } from "@/lib/asciiStudy";
-import { createAsciiScene, useAsciiMotionMode } from "@/lib/asciiRuntime";
-import type { AsciiSceneController } from "@/lib/asciiRuntime";
-import { useLocale } from "@/providers/LocaleProvider";
+import { useEffect, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
-const INITIAL_FRAME = renderAsciiStudy(
-  fitAsciiGrid(560, 320, 0.6, 64),
-  0.42,
-  idleAsciiPointer
-);
+/**
+ * ESTUDIO DE MOVIMIENTO N.º 001
+ *
+ * Principio: el movimiento secuencial (los estudios de crono-fotografía)
+ * traducido a una retícula tipográfica en tiempo real. No hay imagen:
+ * cada fotograma se calcula y se dibuja con caracteres.
+ *
+ * El ciclo narra el sistema de ITER: BUILD → SHIFT → CUT → RE.
+ * El cursor actúa como lente que desplaza localmente el campo (SHIFT).
+ */
 
-export interface AsciiStudyProps {
-  className?: string;
-  variant?: "panel" | "background";
+const RAMP = [" ", "·", ":", ";", "+", "=", "*", "#", "%", "■"];
+const FPS_INTERVAL = 1000 / 21;
+
+const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t: number) =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+const sdDisc = (x: number, y: number, cx: number, cy: number, r: number) =>
+  Math.hypot(x - cx, y - cy) - r;
+const sdBox = (x: number, y: number, h: number) =>
+  Math.max(Math.abs(x) - h, Math.abs(y) - h);
+/** Distancia → densidad 0..1 con borde suave (da la rampa de grises) */
+const dens = (sd: number) => clamp01((0.02 - sd) / 0.045);
+
+const hash = (a: number, b: number) => {
+  const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+type Phase = "BUILD" | "SHIFT" | "CUT" | "RE";
+
+function phaseOf(u: number): Phase {
+  if (u < 0.3) return "BUILD";
+  if (u < 0.6) return "SHIFT";
+  if (u < 0.85) return "CUT";
+  return "RE";
 }
 
-export default function AsciiStudy({
-  className = "",
-  variant = "panel",
-}: AsciiStudyProps) {
-  const { locale, t } = useLocale();
-  const mode = useAsciiMotionMode();
-  const [paused, setPaused] = useState(false);
-  const sceneId = useId();
+/** Campo de densidad del ciclo BUILD → SHIFT → CUT → RE */
+function field(x: number, y: number, u: number, A: number): number {
+  let d = 0;
+
+  if (u < 0.3) {
+    // BUILD: unidades discretas se ensamblan en una forma
+    const k = u / 0.3;
+    const steps = 6;
+    const kk = Math.floor(k * steps + 0.0001) / steps;
+    const R = 0.68 * easeOut(kk);
+    d = Math.max(d, dens(sdDisc(x, y, 0, 0, R)));
+    const conv = easeInOut(Math.min(1, k * 1.15));
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const orbit = lerp(1.65, 0.85, conv);
+      const sx = Math.cos(a) * orbit * A * 0.55;
+      const sy = Math.sin(a) * orbit;
+      d = Math.max(d, dens(sdBox(x - sx, y - sy, 0.058)));
+    }
+  } else if (u < 0.6) {
+    // SHIFT: la forma se cisaña; un módulo la atraviesa
+    const k = (u - 0.3) / 0.3;
+    const shear = (easeInOut(k) - 0.5) * 2;
+    d = Math.max(d, dens(sdDisc(x - y * 0.55 * shear, y, 0, 0, 0.68)));
+    const sqx = lerp(-A - 0.35, A * 0.42, easeInOut(k));
+    d = Math.max(d, dens(sdBox(x - sqx, y, 0.23)));
+  } else if (u < 0.85) {
+    // CUT: una barra vacía barre la composición y la sustrae
+    const k = (u - 0.6) / 0.25;
+    d = Math.max(d, dens(sdDisc(x - y * 0.55, y, 0, 0, 0.68)));
+    d = Math.max(d, dens(sdBox(x - A * 0.42, y, 0.23)));
+    const sweep = lerp(-A - 0.3, A + 0.3, easeInOut(k));
+    if (Math.abs(x - sweep) < 0.16) d = 0;
+  } else {
+    // RE: la forma se disuelve de vuelta a la retícula
+    const k = easeInOut((u - 0.85) / 0.15);
+    d = Math.max(d, dens(sdDisc(x, y, 0, 0, 0.68 * (1 - k))));
+    d = Math.max(d, dens(sdBox(x - A * 0.42, y, 0.23 * (1 - k))));
+  }
+
+  return d;
+}
+
+export default function AsciiStudy({ className = "" }: { className?: string }) {
+  const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const frameRef = useRef<HTMLSpanElement>(null);
-  const controllerRef = useRef<AsciiSceneController | null>(null);
-  const chipRefs = useRef<Partial<Record<AsciiPhase, HTMLSpanElement | null>>>(
-    {}
-  );
+  const chipRefs = useRef<Record<Phase, HTMLSpanElement | null>>({
+    BUILD: null,
+    SHIFT: null,
+    CUT: null,
+    RE: null,
+  });
 
   useEffect(() => {
     const root = rootRef.current;
     const pre = preRef.current;
     if (!root || !pre) return;
-    const controller = createAsciiScene({
-      root,
-      layers: [pre],
-      mode,
-      fps: 28,
-      columns: width =>
-        width < 560 ? 58 : Math.min(128, Math.round(width / 8)),
-      pointerScope: variant === "background" ? "window" : "local",
-      // The decorative background has no autonomous loop requiring a hidden pause control.
-      continuous: variant === "panel",
-      paint(grid, elapsed, _delta, pointer) {
-        const progress = (0.42 + elapsed / 9) % 1;
-        pre.textContent = renderAsciiStudy(grid, progress, pointer);
-        if (frameRef.current) {
-          frameRef.current.textContent = `F${String(Math.floor(progress * 24) + 1).padStart(2, "0")}/24`;
+
+    let raf = 0;
+    let last = 0;
+    let running = false;
+    let cols = 0;
+    let rows = 0;
+    let fieldW = 0;
+    let fieldH = 0;
+    let aspect = 1;
+    const start = performance.now();
+    const pointer = { x: 99, y: 99, tx: 99, ty: 99, active: false };
+
+    const render = (u: number, tSec: number) => {
+      if (!cols || !rows) return;
+      // Lente del cursor: desplazamiento local del campo
+      pointer.x = lerp(pointer.x, pointer.tx, 0.12);
+      pointer.y = lerp(pointer.y, pointer.ty, 0.12);
+
+      const lines: string[] = [];
+      for (let j = 0; j < rows; j++) {
+        const y = (j / (rows - 1)) * 2 - 1;
+        let line = "";
+        for (let i = 0; i < cols; i++) {
+          const x = ((i / (cols - 1)) * 2 - 1) * aspect;
+
+          // Retícula base: el sistema siempre está presente
+          let d = 0.105 + hash(i, j) * 0.035;
+
+          let sx = x;
+          let sy = y;
+          if (pointer.active) {
+            const dx = x - pointer.x;
+            const dy = y - pointer.y;
+            const fall = Math.exp(-(dx * dx + dy * dy) / 0.09);
+            const inv = fall / (Math.hypot(dx, dy) + 0.0001);
+            sx = x + dx * inv * 0.16;
+            sy = y + dy * inv * 0.16;
+            d += fall * 0.1;
+          }
+
+          d = Math.max(d, field(sx, sy, u, aspect));
+
+          const idx = Math.min(RAMP.length - 1, Math.floor(d * RAMP.length));
+          line += RAMP[idx];
         }
-        const phase = asciiPhaseAt(progress);
-        for (const key of ASCII_PHASES) {
-          const chip = chipRefs.current[key];
-          if (chip) chip.dataset.active = String(key === phase);
-        }
-      },
-    });
-    controllerRef.current = controller;
-    return () => {
-      controller.dispose();
-      controllerRef.current = null;
+        lines.push(line);
+      }
+      pre.textContent = lines.join("\n");
+
+      // Capa INFORMATION: contador de fotograma + fase activa
+      const f = Math.floor(u * 24) + 1;
+      if (frameRef.current) {
+        frameRef.current.textContent = `F${String(f).padStart(2, "0")}/24`;
+      }
+      const ph = phaseOf(u);
+      (Object.keys(chipRefs.current) as Phase[]).forEach((key) => {
+        const el = chipRefs.current[key];
+        if (!el) return;
+        const on = key === ph;
+        el.style.backgroundColor = on ? "#e2251b" : "transparent";
+        el.style.color = on ? "#ffffff" : "";
+        el.style.borderColor = on ? "#e2251b" : "";
+      });
+      void tSec;
     };
-  }, [mode, variant]);
 
-  useEffect(() => {
-    controllerRef.current?.setPaused(paused);
-  }, [paused, mode, variant]);
+    const measure = () => {
+      const rect = root.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w < 10 || h < 10) return;
+      const targetCols = w < 560 ? 52 : 88;
+      const fontSize = w / (targetCols * 0.6);
+      const lineH = fontSize * 1.04;
+      cols = targetCols;
+      rows = Math.max(8, Math.floor(h / lineH));
+      aspect = (w / h) * (lineH / (fontSize * 0.6)) * 0.6;
+      aspect = w / h; // coordenadas corregidas por la celda de caracteres
+      pre.style.fontSize = `${fontSize}px`;
+      pre.style.lineHeight = `${lineH}px`;
+      fieldW = w;
+      fieldH = h;
+    };
 
-  const artwork = (
-    <pre
-      ref={preRef}
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 font-mono text-ink"
-      style={{
-        fontSize: "10px",
-        lineHeight: "12.2px",
-        letterSpacing: 0,
-        fontVariantLigatures: "none",
-      }}
-    >
-      {INITIAL_FRAME}
-    </pre>
-  );
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      if (!running) return;
+      if (now - last < FPS_INTERVAL) return;
+      last = now;
+      const tSec = (now - start) / 1000;
+      const u = (tSec % 9) / 9;
+      render(u, tSec);
+    };
 
-  if (variant === "background") {
-    return (
-      <div
-        ref={rootRef}
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 overflow-hidden text-ink opacity-[0.12] ${className}`}
-        style={{ pointerEvents: "none" }}
-      >
-        {artwork}
-      </div>
+    const onPointer = (e: PointerEvent) => {
+      const rect = root.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      pointer.tx = nx * aspect;
+      pointer.ty = ny;
+      pointer.active = true;
+    };
+    const onLeave = () => {
+      pointer.active = false;
+      pointer.tx = 99;
+      pointer.ty = 99;
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        running = entry.isIntersecting;
+      },
+      { threshold: 0.05 },
     );
-  }
+    io.observe(root);
 
-  const staticDescription =
-    mode === "reduced"
-      ? t("Animación desactivada por la preferencia de movimiento reducido.")
-      : t("Vista estática en dispositivos táctiles.");
+    if (reduced) {
+      // Alternativa estática: un fotograma representativo del ciclo
+      render(0.42, 0);
+    } else {
+      running = true;
+      raf = requestAnimationFrame(loop);
+      root.addEventListener("pointermove", onPointer);
+      root.addEventListener("pointerleave", onLeave);
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+      root.removeEventListener("pointermove", onPointer);
+      root.removeEventListener("pointerleave", onLeave);
+      void fieldW;
+      void fieldH;
+    };
+  }, [reduced]);
+
+  const chip = (key: Phase, label: string) => (
+    <span
+      key={key}
+      ref={(el) => {
+        chipRefs.current[key] = el;
+      }}
+      className="border border-current px-1.5 py-0.5 transition-colors duration-200"
+    >
+      {label}
+    </span>
+  );
 
   return (
     <figure
-      lang={locale}
-      className={`flex min-h-[420px] min-w-0 flex-col border border-ink bg-paper sm:min-h-[480px] ${className}`}
-      // Captions can grow when translated or zoomed, regardless of a caller's fixed height.
-      style={{ height: "auto" }}
-      aria-label={t(
-        "Estudio de movimiento: figuras geométricas que se construyen, se desplazan y se recortan, dibujadas con caracteres ASCII."
-      )}
+      className={`flex flex-col border border-ink bg-paper ${className}`}
+      aria-label="Estudio de movimiento: figuras geométricas que se construyen, se desplazan y se recortan en bucle, dibujadas con caracteres tipográficos."
     >
-      <figcaption className="mono-label flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-ink px-3 py-2 [overflow-wrap:anywhere]">
-        <span className="min-w-0">
-          {t("ITER — Estudio de movimiento N.º 001")}
-        </span>
-        <button
-          type="button"
-          aria-controls={sceneId}
-          aria-pressed={paused}
-          aria-label={
-            mode === "animated"
-              ? t(paused ? "Reanudar animación" : "Pausar animación")
-              : staticDescription
-          }
-          disabled={mode !== "animated"}
-          onClick={() => setPaused(value => !value)}
-          className="min-h-11 max-w-full border border-ink px-3 py-2 text-left hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink disabled:cursor-default disabled:border-ink/30 disabled:bg-transparent disabled:text-smoke"
-        >
-          {mode === "animated"
-            ? t(paused ? "Reanudar" : "Pausar")
-            : t("Imagen estática")}
-        </button>
-        <span className="flex w-full flex-wrap gap-1" aria-hidden="true">
-          {ASCII_PHASES.map(phase => (
-            <span
-              key={phase}
-              ref={element => {
-                chipRefs.current[phase] = element;
-              }}
-              data-active={phase === "SHIFT"}
-              className="border border-ink px-1.5 py-0.5 data-[active=true]:bg-ink data-[active=true]:text-paper"
-            >
-              {phase}
-            </span>
-          ))}
+      <figcaption className="mono-label flex items-center justify-between gap-2 border-b border-ink px-3 py-2">
+        <span>ITER — Estudio de movimiento N.º 001</span>
+        <span className="hidden gap-1 sm:flex" aria-hidden="true">
+          {chip("BUILD", "Build")}
+          {chip("SHIFT", "Shift")}
+          {chip("CUT", "Cut")}
+          {chip("RE", "Re")}
         </span>
       </figcaption>
 
       <div
-        id={sceneId}
         ref={rootRef}
-        className="relative min-h-[260px] flex-1 touch-pan-y overflow-hidden sm:min-h-[320px]"
+        className="relative min-h-[280px] flex-1 touch-pan-y overflow-hidden sm:min-h-[340px]"
       >
-        {artwork}
+        <pre
+          ref={preRef}
+          aria-hidden="true"
+          className="font-mono absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 text-ink"
+        />
       </div>
 
-      <div className="mono-label flex shrink-0 flex-wrap items-start gap-x-4 gap-y-2 border-t border-ink px-3 py-3 text-ink [overflow-wrap:anywhere]">
-        <span
-          ref={frameRef}
-          aria-hidden="true"
-          className="shrink-0 tabular-nums"
-        >
-          F11/24
-        </span>
-        <span className="min-w-0 flex-1 basis-48">
-          {t("Movimiento secuencial → retícula tipográfica")}
-        </span>
-        <span className="w-full text-smoke">
-          {mode === "animated"
-            ? t("El cursor desplaza, deforma y recorta el campo.")
-            : staticDescription}
+      <div className="mono-label flex items-center justify-between border-t border-ink px-3 py-2 text-ink">
+        <span ref={frameRef}>F01/24</span>
+        <span>Movimiento secuencial → retícula tipográfica</span>
+        <span aria-hidden="true">
+          Loop<span className="blink">_</span>
         </span>
       </div>
     </figure>

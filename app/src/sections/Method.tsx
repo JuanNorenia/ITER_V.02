@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useInView } from "@/hooks/useInView";
-import { useLocale } from "@/providers/LocaleProvider";
 
 const steps = [
   {
@@ -37,7 +36,6 @@ const steps = [
  * al llegar al centro del viewport. En móvil: secuencia vertical.
  */
 export default function Method() {
-  const { t } = useLocale();
   const ref = useInView<HTMLElement>(0.05);
   const stepsRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -55,7 +53,7 @@ export default function Method() {
       const center = window.innerHeight * 0.55;
       const progress = Math.min(
         1,
-        Math.max(0, (center - rect.top) / rect.height)
+        Math.max(0, (center - rect.top) / rect.height),
       );
       fill.style.transform = `scaleY(${progress})`;
     };
@@ -79,16 +77,16 @@ export default function Method() {
     if (!container) return;
     const items = Array.from(container.querySelectorAll("[data-step]"));
     const io = new IntersectionObserver(
-      entries => {
+      (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             setActive(Number((entry.target as HTMLElement).dataset.step));
           }
         }
       },
-      { rootMargin: "-45% 0px -45% 0px" }
+      { rootMargin: "-45% 0px -45% 0px" },
     );
-    items.forEach(el => io.observe(el));
+    items.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
 
@@ -100,38 +98,37 @@ export default function Method() {
       aria-labelledby="metodo-title"
     >
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-        <div className="min-w-0 lg:col-span-5">
+        <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
             <Reveal variant="up">
               <p className="mono-label text-smoke">
-                <span className="text-red">03</span> / {t("Método ITER")}
+                <span className="text-red">03</span> / Método ITER
               </p>
             </Reveal>
             <Reveal variant="line" className="mt-6">
               <h2 id="metodo-title" className="display-section">
-                {t("Cuestionar es el principio.")}
+                Cuestionar es el principio.
               </h2>
             </Reveal>
             <Reveal variant="up" delay={140} className="mt-6 max-w-md">
               <p className="body-text text-smoke">
-                {t(
-                  "No seguimos una receta idéntica para todos los problemas. Seguimos un proceso para encontrar la solución adecuada."
-                )}
+                No seguimos una receta idéntica para todos los problemas.
+                Seguimos un proceso para encontrar la solución adecuada.
               </p>
             </Reveal>
             <Reveal variant="up" delay={220} className="mt-10">
               <p className="mono-label border border-ink px-4 py-3 tabular-nums">
-                {t("Etapa")}{" "}
+                Etapa{" "}
                 <span className="text-red">
                   {String(active + 1).padStart(2, "0")}
                 </span>{" "}
-                / 05 — {t(steps[active].title)}
+                / 05 — {steps[active].title}
               </p>
             </Reveal>
           </div>
         </div>
 
-        <div className="min-w-0 lg:col-span-7">
+        <div className="lg:col-span-7">
           <div ref={stepsRef} className="relative pl-10 sm:pl-14">
             {/* Riel del proceso */}
             <div
@@ -157,18 +154,18 @@ export default function Method() {
                   >
                     <span
                       className={`absolute -left-10 top-5 flex h-3 w-3 items-center justify-center border transition-colors duration-300 sm:-left-14 lg:top-[3.4rem] ${
-                        isActive ? "border-red bg-red" : "border-black bg-paper"
+                        isActive
+                          ? "border-red bg-red"
+                          : "border-black bg-paper"
                       }`}
                       aria-hidden="true"
                     />
-                    <div className="flex min-w-0 flex-wrap items-baseline gap-4">
+                    <div className="flex items-baseline gap-4">
                       <span className="mono-label text-smoke">{s.n}</span>
-                      <h3 className="display-sub break-words uppercase">
-                        {t(s.title)}
-                      </h3>
+                      <h3 className="display-sub uppercase">{s.title}</h3>
                     </div>
                     <p className="body-text mt-3 max-w-lg text-smoke">
-                      {t(s.text)}
+                      {s.text}
                     </p>
                   </article>
                 </Reveal>
@@ -178,10 +175,8 @@ export default function Method() {
 
           <Reveal variant="line" className="mt-14">
             <p className="display-sub max-w-xl">
-              {t("La mejor solución no es la que hace más.")}{" "}
-              <span className="text-smoke">
-                {t("Es la que resuelve mejor.")}
-              </span>
+              La mejor solución no es la que hace más.{" "}
+              <span className="text-smoke">Es la que resuelve mejor.</span>
             </p>
           </Reveal>
         </div>

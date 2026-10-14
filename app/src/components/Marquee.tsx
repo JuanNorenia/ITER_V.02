@@ -1,6 +1,7 @@
-import { useLocale } from "@/providers/LocaleProvider";
-
-/** Static typographic divider: one accessible copy, no continuous motion. */
+/**
+ * Cinta divisoria tipográfica. Separadores, no adornos:
+ * lleva las tres frases del sistema de marca.
+ */
 export default function Marquee({
   items,
   dark = false,
@@ -10,24 +11,30 @@ export default function Marquee({
   dark?: boolean;
   className?: string;
 }) {
-  const { t } = useLocale();
+  const row = (
+    <>
+      {items.map((item, i) => (
+        <span key={i} className="flex items-center">
+          <span className="px-6">{item}</span>
+          <span aria-hidden="true" className="px-1 text-red">
+            ·
+          </span>
+        </span>
+      ))}
+    </>
+  );
 
   return (
     <div
-      className={`hairline-t hairline-b py-3 ${
+      className={`marquee hairline-t hairline-b py-3 ${
         dark ? "border-white/20 bg-black text-white" : "bg-paper text-ink"
       } ${className}`}
+      aria-hidden="true"
     >
-      <ul className="mono-label flex flex-wrap items-center justify-center gap-x-8 gap-y-2 px-5 sm:px-8">
-        {items.map((item, i) => (
-          <li key={i} className="flex min-w-0 items-center gap-8">
-            <span className="min-w-0 break-words">{t(item)}</span>
-            <span aria-hidden="true" className="shrink-0 text-red">
-              ·
-            </span>
-          </li>
-        ))}
-      </ul>
+      <div className="marquee__track mono-label">
+        <div className="flex shrink-0">{row}</div>
+        <div className="flex shrink-0">{row}</div>
+      </div>
     </div>
   );
 }

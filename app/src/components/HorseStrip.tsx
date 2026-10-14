@@ -1,153 +1,298 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { fitAsciiGrid, idleAsciiPointer, wrap } from "@/lib/asciiGrid";
-import { horseCycleRate, renderAsciiHorse } from "@/lib/asciiHorse";
-import { createAsciiScene, useAsciiMotionMode } from "@/lib/asciiRuntime";
-import type { AsciiSceneController } from "@/lib/asciiRuntime";
-import { useLocale } from "@/providers/LocaleProvider";
+import { useEffect, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
-const INITIAL_FRAME = renderAsciiHorse(
-  fitAsciiGrid(720, 360, 0.6, 84),
-  0.12,
-  idleAsciiPointer
-);
+/**
+ * ESTUDIO DE MOVIMIENTO N.º 002 — GALOPE
+ *
+ * La referencia del caballo, interpretada: no un animal ilustrado, sino
+ * el principio que nos inspira de los estudios de locomoción secuencial —
+ * el movimiento descompuesto en fotogramas. Un galope es un ciclo que se
+ * repite para avanzar: la metáfora exacta de iterar.
+ *
+ * Seis fotogramas dibujados con caracteres, calculados en tiempo real.
+ * Sobre fondo negro actúa como puente visual hacia el CTA final:
+ * la página no se corta, cambia de estado. El puntero acelera el galope.
+ */
+
+const FRAMES: string[][] = [
+  [
+    "                   ##",
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#      #      ##",
+    "      ##       #",
+    "     ##        #",
+    "    ##         #",
+  ],
+  [
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#    ###      ###",
+    "     #         ##",
+    "",
+    "",
+    "",
+  ],
+  [
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#    ###     ##",
+    "    ##        ##",
+    "    #          ##",
+    "    #          ##",
+    "               ##",
+  ],
+  [
+    "                   ##",
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#    ###      #",
+    "    ##        #",
+    "    #         #",
+    "    #         #",
+  ],
+  [
+    "                   ##",
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#    #        #",
+    "     #        #",
+    "     #        #",
+    "     #        #",
+  ],
+  [
+    "                   ##",
+    "                  ####",
+    "                 #######",
+    "              ####",
+    "            ####",
+    "   ############",
+    "#################",
+    "################",
+    "###############",
+    "#    #        ##",
+    "     #         #",
+    "     #         #",
+    "     #         #",
+  ],
+];
+
+const HORSE_W = 24;
+const HORSE_H = 13;
+const TICK = 1000 / 13; // cadencia del galope
+const BASE_SPEED = 0.62; // celdas por fotograma
 
 export default function HorseStrip({ className = "" }: { className?: string }) {
-  const { locale, t } = useLocale();
-  const mode = useAsciiMotionMode();
-  const [paused, setPaused] = useState(false);
-  const sceneId = useId();
+  const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const horseRef = useRef<HTMLPreElement>(null);
   const groundRef = useRef<HTMLPreElement>(null);
   const frameRef = useRef<HTMLSpanElement>(null);
-  const controllerRef = useRef<AsciiSceneController | null>(null);
 
   useEffect(() => {
     const root = rootRef.current;
     const horse = horseRef.current;
     const ground = groundRef.current;
     if (!root || !horse || !ground) return;
-    let progress = 0.12;
-    const controller = createAsciiScene({
-      root,
-      layers: [horse, ground],
-      mode,
-      fps: 30,
-      columns: width =>
-        width < 640 ? 72 : Math.min(164, Math.round(width / 8)),
-      paint(grid, _elapsed, delta, pointer) {
-        progress = wrap(progress + delta * horseCycleRate(pointer));
-        const frame = renderAsciiHorse(grid, progress, pointer);
-        horse.textContent = frame.horse;
-        ground.textContent = frame.ground;
-        if (frameRef.current) {
-          frameRef.current.textContent = `F${String(Math.floor(progress * 32) + 1).padStart(2, "0")}/32`;
-        }
-      },
-    });
-    controllerRef.current = controller;
-    return () => {
-      controller.dispose();
-      controllerRef.current = null;
+
+    let raf = 0;
+    let last = 0;
+    let running = false;
+    let cols = 0;
+    let rows = 0;
+    let x = -HORSE_W - 2;
+    let frame = 0;
+    let speed = BASE_SPEED;
+    let speedTarget = BASE_SPEED;
+
+    const measure = () => {
+      const rect = root.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) return;
+      const firstMeasure = cols === 0;
+      const targetCols = rect.width < 640 ? 58 : 118;
+      const fontSize = rect.width / (targetCols * 0.6);
+      const lineH = fontSize * 1.06;
+      cols = targetCols;
+      rows = Math.max(HORSE_H + 3, Math.floor(rect.height / lineH));
+      for (const pre of [horse, ground]) {
+        pre.style.fontSize = `${fontSize}px`;
+        pre.style.lineHeight = `${lineH}px`;
+      }
+      // El caballo entra en escena ya visible, no desde fuera del campo
+      if (firstMeasure) x = Math.round(cols * 0.18);
+      paintGround();
     };
-  }, [mode]);
 
-  useEffect(() => {
-    controllerRef.current?.setPaused(paused);
-  }, [paused, mode]);
+    const paintGround = () => {
+      if (!cols || !rows) return;
+      const lines: string[] = [];
+      for (let j = 0; j < rows; j++) {
+        if (j === rows - 1) {
+          // Línea de suelo: punteada, constante
+          lines.push("·".repeat(cols));
+        } else if (j % 3 === 1) {
+          // Textura mínima: la retícula del sistema siempre presente
+          let line = "";
+          for (let i = 0; i < cols; i++) {
+            line += (i * 7 + j * 13) % 29 === 0 ? "·" : " ";
+          }
+          lines.push(line);
+        } else {
+          lines.push("");
+        }
+      }
+      ground.textContent = lines.join("\n");
+    };
 
-  const staticDescription =
-    mode === "reduced"
-      ? t("Animación desactivada por la preferencia de movimiento reducido.")
-      : t("Vista estática en dispositivos táctiles.");
+    const paint = () => {
+      if (!cols || !rows) return;
+      const sprite = FRAMES[frame];
+      const top = rows - 1 - HORSE_H;
+      const left = Math.round(x);
+      const lines: string[] = [];
+      for (let j = 0; j < rows; j++) {
+        const sj = j - top;
+        if (sj < 0 || sj >= HORSE_H) {
+          lines.push("");
+          continue;
+        }
+        const src = sprite[sj];
+        if (left >= cols || left + src.length <= 0) {
+          lines.push("");
+          continue;
+        }
+        const start = Math.max(0, left);
+        const end = Math.min(cols, left + src.length);
+        lines.push(
+          " ".repeat(start) + src.slice(start - left, end - left),
+        );
+      }
+      horse.textContent = lines.join("\n");
+      if (frameRef.current) {
+        frameRef.current.textContent = `F${String(frame + 1).padStart(2, "0")}/06`;
+      }
+    };
+
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      if (!running) return;
+      if (now - last < TICK) return;
+      last = now;
+      speed += (speedTarget - speed) * 0.08;
+      x += speed;
+      // Pausa entre cruces: quietud y movimiento alternados, no desfile
+      if (x > cols + 2) x = -HORSE_W - 2 - Math.random() * 45;
+      frame = (frame + 1) % FRAMES.length;
+      paint();
+    };
+
+    const onEnter = () => {
+      speedTarget = BASE_SPEED * 1.9;
+    };
+    const onLeave = () => {
+      speedTarget = BASE_SPEED;
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        running = entry.isIntersecting;
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(root);
+
+    if (reduced) {
+      // Alternativa estática: el fotograma de suspensión, a mitad del recorrido
+      x = 8;
+      frame = 2;
+      paint();
+    } else {
+      running = true;
+      raf = requestAnimationFrame(loop);
+      root.addEventListener("pointerenter", onEnter);
+      root.addEventListener("pointerleave", onLeave);
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+      root.removeEventListener("pointerenter", onEnter);
+      root.removeEventListener("pointerleave", onLeave);
+    };
+  }, [reduced]);
 
   return (
     <figure
-      lang={locale}
-      className={`min-w-0 border-y border-white/20 bg-black text-white ${className}`}
-      aria-label={t(
-        "Estudio de movimiento: silueta original de un caballo al galope, dibujada con caracteres ASCII."
-      )}
+      className={`border-y border-white/15 bg-black text-white ${className}`}
+      aria-label="Estudio de movimiento: un caballo galopando descompuesto en seis fotogramas dibujados con caracteres tipográficos. El ciclo se repite para avanzar."
     >
-      <figcaption className="mono-label flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-b border-white/20 px-4 py-3 [overflow-wrap:anywhere] sm:px-8">
-        <span className="min-w-0">
-          {t("ITER — Estudio de movimiento N.º 002")}
+      <figcaption className="mono-label flex items-center justify-between gap-2 border-b border-white/15 px-5 py-2.5 sm:px-8">
+        <span>ITER — Estudio de movimiento N.º 002</span>
+        <span className="hidden items-center gap-2 sm:flex" aria-hidden="true">
+          <span className="inline-block h-2 w-2 bg-red" />
+          Galope / iteración
         </span>
-        <span className="min-w-0">{t("Galope / iteración")}</span>
-        <button
-          type="button"
-          aria-controls={sceneId}
-          aria-pressed={paused}
-          aria-label={
-            mode === "animated"
-              ? t(paused ? "Reanudar animación" : "Pausar animación")
-              : staticDescription
-          }
-          disabled={mode !== "animated"}
-          onClick={() => setPaused(value => !value)}
-          className="min-h-11 max-w-full border border-white/60 px-3 py-2 text-left hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:cursor-default disabled:border-white/30 disabled:bg-transparent disabled:text-white/70"
-        >
-          {mode === "animated"
-            ? t(paused ? "Reanudar" : "Pausar")
-            : t("Imagen estática")}
-        </button>
       </figcaption>
 
       <div
-        id={sceneId}
         ref={rootRef}
-        className="relative w-full touch-pan-y overflow-hidden"
-        style={{ height: "clamp(260px, 34vw, 480px)" }}
+        className="relative h-[240px] touch-pan-y overflow-hidden sm:h-[300px] lg:h-[340px]"
       >
         <pre
           ref={groundRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 font-mono text-white/30"
-          style={{
-            fontSize: "10px",
-            lineHeight: "12.2px",
-            letterSpacing: 0,
-            fontVariantLigatures: "none",
-          }}
-        >
-          {INITIAL_FRAME.ground}
-        </pre>
+          className="font-mono absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 text-white/40"
+        />
         <pre
           ref={horseRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 font-mono text-white"
-          style={{
-            fontSize: "10px",
-            lineHeight: "12.2px",
-            letterSpacing: 0,
-            fontVariantLigatures: "none",
-          }}
-        >
-          {INITIAL_FRAME.horse}
-        </pre>
+          className="font-mono absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 text-white"
+        />
       </div>
 
-      <div className="mono-label flex flex-wrap items-start gap-x-5 gap-y-2 border-t border-white/20 px-4 py-3 [overflow-wrap:anywhere] sm:px-8">
-        <span
-          ref={frameRef}
-          aria-hidden="true"
-          className="shrink-0 tabular-nums"
-        >
-          F04/32
+      <div className="mono-label flex items-center justify-between border-t border-white/15 px-5 py-2.5 sm:px-8">
+        <span ref={frameRef} className="text-red tabular-nums">
+          F01/06
         </span>
-        <span className="min-w-0 flex-1 basis-56">
-          {t("Locomoción secuencial → retícula tipográfica")}
+        <span className="hidden sm:block">
+          Locomoción secuencial → retícula tipográfica
         </span>
-        <span className="min-w-0 flex-1 basis-56 text-white/70">
-          {t("Un ciclo que se repite para avanzar")}
-        </span>
-        <span className="w-full text-white/70">
-          {mode === "animated"
-            ? t(
-                "El cursor modula el ritmo, la posición y la tensión del galope."
-              )
-            : staticDescription}
-        </span>
+        <span className="text-white/50">Un ciclo que se repite para avanzar</span>
       </div>
     </figure>
   );

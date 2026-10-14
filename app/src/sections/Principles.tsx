@@ -1,6 +1,5 @@
 import { Reveal } from "@/components/Reveal";
 import { useInView } from "@/hooks/useInView";
-import { useLocale } from "@/providers/LocaleProvider";
 
 const principles = [
   {
@@ -25,7 +24,6 @@ const principles = [
  * Tres principios como piezas editoriales, no tarjetas.
  */
 export default function Principles() {
-  const { t } = useLocale();
   const ref = useInView<HTMLElement>(0.08);
 
   return (
@@ -37,36 +35,36 @@ export default function Principles() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">04</span> / {t("Cómo pensamos")}
+          <span className="text-red">04</span> / Cómo pensamos
         </p>
       </Reveal>
 
       <Reveal variant="line" className="mt-6 max-w-6xl">
         <h2 id="principios-title" className="display-section">
-          {t("No venimos a decirte que sí a todo.")}
+          No venimos a decirte que sí a todo.
         </h2>
       </Reveal>
 
       <div className="mt-8 grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
         <Reveal variant="up" delay={120}>
           <p className="body-text">
-            {t(
-              "Queremos entender lo que necesitas, no solamente ejecutar lo que nos pides."
-            )}
+            Queremos entender lo que necesitas, no solamente ejecutar lo que
+            nos pides.
           </p>
         </Reveal>
         <Reveal variant="up" delay={200}>
           <p className="body-text text-smoke">
-            {t(
-              "Si existe una forma más simple de resolverlo, la vamos a explorar contigo. Si una herramienta que ya existe es suficiente, no vamos a construir otra por construirla. Y si realmente hace falta crear algo nuevo, vamos a encontrar la forma de hacerlo."
-            )}
+            Si existe una forma más simple de resolverlo, la vamos a explorar
+            contigo. Si una herramienta que ya existe es suficiente, no vamos
+            a construir otra por construirla. Y si realmente hace falta crear
+            algo nuevo, vamos a encontrar la forma de hacerlo.
           </p>
         </Reveal>
       </div>
 
       <div className="mt-16 grid grid-cols-1 gap-px bg-ink/15 lg:grid-cols-3">
         {principles.map((p, i) => (
-          <Reveal key={p.n} variant="up" delay={i * 120} className="min-w-0">
+          <Reveal key={p.n} variant="up" delay={i * 120}>
             <article className="group flex h-full flex-col justify-between bg-mist p-6 transition-colors duration-300 hover:bg-black hover:text-white lg:min-h-[280px] lg:p-8">
               <div className="flex items-start justify-between">
                 <span className="mono-label text-smoke group-hover:text-white/50">
@@ -78,11 +76,9 @@ export default function Principles() {
                 />
               </div>
               <div className="mt-14">
-                <h3 className="display-sub break-words uppercase">
-                  {t(p.title)}
-                </h3>
+                <h3 className="display-sub uppercase">{p.title}</h3>
                 <p className="body-text mt-3 text-smoke group-hover:text-white/70">
-                  {t(p.text)}
+                  {p.text}
                 </p>
               </div>
             </article>
@@ -91,14 +87,11 @@ export default function Principles() {
       </div>
 
       <div className="mt-20 grid grid-cols-12">
-        <Reveal
-          variant="line"
-          className="col-span-12 lg:col-span-9 lg:col-start-4"
-        >
+        <Reveal variant="line" className="col-span-12 lg:col-span-9 lg:col-start-4">
           <p className="display-section">
-            {t("Tu problema es el punto de partida.")}{" "}
+            Tu problema es el punto de partida.{" "}
             <span className="text-smoke">
-              {t("Encontrar la forma correcta es nuestro trabajo.")}
+              Encontrar la forma correcta es nuestro trabajo.
             </span>
           </p>
         </Reveal>
