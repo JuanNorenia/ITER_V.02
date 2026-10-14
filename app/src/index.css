@@ -104,7 +104,19 @@
   }
 
   .hero-title {
-    font-size: clamp(2rem, 14.5cqw, 9.25rem);
+    font-size: clamp(2rem, 9.5cqw, 7.5rem);
+  }
+
+  .hero-accent {
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    .hero-accent {
+      white-space: nowrap;
+    }
   }
 
   .display-section {
@@ -275,9 +287,16 @@
     white-space: nowrap;
   }
   .marquee__track {
-    display: inline-flex;
+    display: flex;
+    width: max-content;
     animation: marquee 36s linear infinite;
     will-change: transform;
+  }
+  .marquee__group {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: space-around;
+    min-width: 100vw;
   }
   @keyframes marquee {
     from {

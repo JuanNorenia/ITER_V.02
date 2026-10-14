@@ -14,17 +14,17 @@ export default function Marquee({
   className?: string;
 }) {
   const { t } = useLocale();
-  const row = (
-    <>
+  const row = (copy: "first" | "second") => (
+    <div className="marquee__group" key={copy}>
       {items.map((item, i) => (
-        <span key={i} className="flex shrink-0 items-center">
+        <span key={`${copy}-${i}`} className="flex shrink-0 items-center">
           <span className="px-6">{t(item)}</span>
           <span aria-hidden="true" className="px-1 text-red">
             ·
           </span>
         </span>
       ))}
-    </>
+    </div>
   );
 
   return (
@@ -34,9 +34,9 @@ export default function Marquee({
       } ${className}`}
       aria-hidden="true"
     >
-      <div className="marquee__track mono-label w-max">
-        <div className="flex shrink-0">{row}</div>
-        <div className="flex shrink-0">{row}</div>
+      <div className="marquee__track mono-label">
+        {row("first")}
+        {row("second")}
       </div>
     </div>
   );

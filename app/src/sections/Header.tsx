@@ -26,7 +26,7 @@ export default function Header() {
       }
       if (e.key === "Tab" && open) {
         const controls = Array.from(document.querySelectorAll<HTMLElement>(
-          "header a, header button, #menu-movil a",
+          "header a, header button, header select, #menu-movil a",
         )).filter(el => el.getClientRects().length && !el.closest("[inert]"));
         const first = controls[0];
         const last = controls.at(-1);
@@ -80,7 +80,7 @@ export default function Header() {
             <Link
               to={contactPath()}
               data-magnetic
-              className="mono-label whitespace-nowrap border border-white px-4 py-2.5 text-white transition-colors duration-300 hover:bg-white hover:text-black"
+              className="mono-label inline-flex h-12 w-36 shrink-0 items-center justify-center whitespace-nowrap border border-white px-4 text-white transition-colors duration-300 hover:bg-white hover:text-black"
             >
               {t("Hablemos ↗")}
             </Link>

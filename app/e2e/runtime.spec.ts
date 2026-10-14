@@ -115,6 +115,9 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
     .locator("#top .hero-title .rv-line")
     .nth(2)
     .locator("span > span");
+  const spanishHeroFontSize = await page
+    .locator("#top .hero-title")
+    .evaluate(element => getComputedStyle(element).fontSize);
   await expect(thirdHeroLine).toContainText("ser así?");
   await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(0, 0, 0)");
   await expect(thirdHeroLine).toHaveCSS("color", "rgb(255, 255, 255)");
@@ -141,20 +144,62 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
     "animation-duration",
     "36s"
   );
+  const marqueeGroups = await page.locator(".marquee").evaluateAll(marquees =>
+    marquees.map(marquee => {
+      const groups = Array.from(marquee.querySelectorAll<HTMLElement>(".marquee__group"));
+      return {
+        parentWidth: marquee.clientWidth,
+        groups: groups.map(group => group.getBoundingClientRect().width),
+      };
+    })
+  );
+  expect(marqueeGroups).toHaveLength(2);
+  for (const marquee of marqueeGroups) {
+    expect(marquee.groups).toHaveLength(2);
+    expect(marquee.groups[0]!).toBeGreaterThanOrEqual(marquee.parentWidth - 1);
+    expect(
+      Math.abs(marquee.groups[0]! - marquee.groups[1]!)
+    ).toBeLessThanOrEqual(1);
+  }
   expect(
     await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--red").trim()
     )
   ).toBe("#e2251b");
 
-  const switcher = page.getByRole("group", { name: "Idioma" });
-  await switcher.getByRole("button", { name: "Inglés" }).click();
+  await page.getByRole("combobox", { name: "Idioma" }).selectOption("en");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  const englishHeroFontSize = await page
+    .locator("#top .hero-title")
+    .evaluate(element => getComputedStyle(element).fontSize);
+  expect(englishHeroFontSize).toBe(spanishHeroFontSize);
   await expect(page.locator("#top .hero-title")).toContainText(
     "What if it didn’t have to be this way?"
   );
   await expect(thirdHeroLine).toContainText("be this way?");
   await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  const englishAccentGeometry = await thirdHeroLine.evaluate(element => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return {
+      lineCount: range.getClientRects().length,
+      accentWidth: element.getBoundingClientRect().width,
+      columnWidth: element.parentElement?.parentElement?.getBoundingClientRect().width ?? 0,
+    };
+  });
+  expect(englishAccentGeometry.lineCount).toBe(1);
+  expect(englishAccentGeometry.accentWidth).toBeLessThan(
+    englishAccentGeometry.columnWidth
+  );
+
+  await page.getByRole("combobox", { name: "Language" }).selectOption("fr");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  const frenchHeroFontSize = await page
+    .locator("#top .hero-title")
+    .evaluate(element => getComputedStyle(element).fontSize);
+  expect(frenchHeroFontSize).toBe(spanishHeroFontSize);
+  await page.getByRole("combobox", { name: "Langue" }).selectOption("en");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
   await page.goto("/#/contacto");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(

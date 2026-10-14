@@ -71,19 +71,22 @@ test("language controls translate accessible names, metadata and persist the cho
     "es_CO"
   );
 
-  const spanishGroup = page.getByRole("group", { name: "Idioma" });
-  for (const [name, code] of [
-    ["Español", "ES"],
-    ["Inglés", "EN"],
-    ["Francés", "FR"],
-  ]) {
-    await expect(spanishGroup.getByRole("button", { name })).toHaveText(code);
-  }
-  await expect(spanishGroup.getByRole("button", { name: "Español" })).toHaveAttribute(
-    "aria-pressed",
-    "true"
-  );
-  await spanishGroup.getByRole("button", { name: "Inglés" }).click();
+  const spanishSelect = page.getByRole("combobox", { name: "Idioma" });
+  await expect(spanishSelect).toHaveValue("es");
+  await expect(spanishSelect.locator("option")).toHaveText([
+    "ES — Español",
+    "EN — Inglés",
+    "FR — Francés",
+  ]);
+  const [selectBounds, contactBounds] = await Promise.all([
+    spanishSelect.boundingBox(),
+    page.locator("header nav a").last().boundingBox(),
+  ]);
+  expect(selectBounds).not.toBeNull();
+  expect(contactBounds).not.toBeNull();
+  expect(selectBounds!.width).toBe(contactBounds!.width);
+  expect(selectBounds!.height).toBe(contactBounds!.height);
+  await spanishSelect.selectOption("en");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page).toHaveTitle("ITER — We find better ways to solve problems");
@@ -96,12 +99,14 @@ test("language controls translate accessible names, metadata and persist the cho
     "en_US"
   );
 
-  const englishGroup = page.getByRole("group", { name: "Language" });
-  await expect(englishGroup.getByRole("button", { name: "English" })).toHaveAttribute(
-    "aria-pressed",
-    "true"
-  );
-  await englishGroup.getByRole("button", { name: "French" }).click();
+  const englishSelect = page.getByRole("combobox", { name: "Language" });
+  await expect(englishSelect).toHaveValue("en");
+  await expect(englishSelect.locator("option")).toHaveText([
+    "ES — Spanish",
+    "EN — English",
+    "FR — French",
+  ]);
+  await englishSelect.selectOption("fr");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await expect(page).toHaveTitle(
@@ -111,12 +116,14 @@ test("language controls translate accessible names, metadata and persist the cho
     "content",
     "fr_FR"
   );
-  await expect(page.getByRole("group", { name: "Langue" })).toBeVisible();
-  await expect(
-    page
-      .getByRole("group", { name: "Langue" })
-      .getByRole("button", { name: "Français" })
-  ).toHaveAttribute("aria-pressed", "true");
+  const frenchSelect = page.getByRole("combobox", { name: "Langue" });
+  await expect(frenchSelect).toBeVisible();
+  await expect(frenchSelect).toHaveValue("fr");
+  await expect(frenchSelect.locator("option")).toHaveText([
+    "ES — Espagnol",
+    "EN — Anglais",
+    "FR — Français",
+  ]);
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem("iter:locale")))
     .toBe("fr");
@@ -133,7 +140,7 @@ test("language controls translate accessible names, metadata and persist the cho
   );
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-  await expect(page.getByRole("group", { name: "Langue" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Langue" })).toBeVisible();
 });
 
 test("mobile menu is inert while closed, keyboard reachable, and closes on Escape", async ({
@@ -154,6 +161,13 @@ test("mobile menu is inert while closed, keyboard reachable, and closes on Escap
   await expect(menu).not.toHaveAttribute("inert");
   await expect(menu).toHaveCSS("background-color", "rgb(0, 0, 0)");
   const menuLinks = menu.getByRole("link");
+  await expect(menuLinks.first()).toBeFocused();
+
+  const language = page.getByRole("combobox", { name: "Idioma" });
+  await language.focus();
+  await page.keyboard.press("Tab");
+  await expect(toggle).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(menuLinks.first()).toBeFocused();
 
   const logo = page.getByRole("link", { name: "ITER — volver arriba" });

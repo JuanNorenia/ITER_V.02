@@ -8,18 +8,11 @@ const groupNames: Record<Locale, string> = {
   en: "Language",
   fr: "Langue",
 };
-const languageNames: Record<Locale, Record<Locale, string>> = {
-  es: { es: "Español", en: "Inglés", fr: "Francés" },
-  en: { es: "Spanish", en: "English", fr: "French" },
-  fr: { es: "Espagnol", en: "Anglais", fr: "Français" },
-};
-
 async function setLocale(page: Page, current: Locale, target: Locale) {
   if (current === target) return;
   await page
-    .getByRole("group", { name: groupNames[current] })
-    .getByRole("button", { name: languageNames[current][target] })
-    .click();
+    .getByRole("combobox", { name: groupNames[current] })
+    .selectOption(target);
   await expect(page.locator("html")).toHaveAttribute("lang", target);
 }
 

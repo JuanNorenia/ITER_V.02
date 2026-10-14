@@ -111,15 +111,15 @@ test("field errors and accessible names are translated in English and French", a
 
   const cases = [
     {
-      button: "Inglés",
-      group: "Language",
+      sourceName: "Idioma",
+      target: "en",
       title: "Let’s start with the problem.",
       nameError: "Tell us your name (at least 2 characters).",
       consentError: "We need your consent to process your data.",
     },
     {
-      button: "French",
-      group: "Langue",
+      sourceName: "Language",
+      target: "fr",
       title: "Commençons par le problème.",
       nameError: "Indiquez votre nom (au moins 2 caractères).",
       consentError: "Nous avons besoin de votre consentement pour traiter vos données.",
@@ -127,13 +127,12 @@ test("field errors and accessible names are translated in English and French", a
   ] as const;
 
   for (const entry of cases) {
-    const switcher = page.getByRole("group", {
-      name: entry.group === "Language" ? "Idioma" : "Language",
-    });
-    await switcher.getByRole("button", { name: entry.button }).click();
+    await page
+      .getByRole("combobox", { name: entry.sourceName })
+      .selectOption(entry.target);
     await expect(page.locator("html")).toHaveAttribute(
       "lang",
-      entry.group === "Language" ? "en" : "fr"
+      entry.target
     );
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(entry.title);
     await page.locator("form button[type=submit]").click();

@@ -45,7 +45,7 @@ export default function Hero() {
               {t("tuviera que")}
             </Reveal>
             <Reveal variant="line" delay={320}>
-              <span className="inline-block bg-black px-[0.12em] text-white">
+              <span className="hero-accent bg-black px-[0.12em] text-white">
                 {t("ser así?")}
               </span>
             </Reveal>

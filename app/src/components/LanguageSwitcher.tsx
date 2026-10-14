@@ -1,27 +1,39 @@
-import { locales } from "@/lib/locale";
+import { isLocale, locales } from "@/lib/locale";
 import { useLocale } from "@/providers/LocaleProvider";
 
 const names = { es: "Español", en: "Inglés", fr: "Francés" } as const;
 
 export default function LanguageSwitcher() {
   const { locale, setLocale, t } = useLocale();
+
   return (
-    <div role="group" aria-label={t("Idioma")} className="flex shrink-0">
-      {locales.map(language => (
-        <button
-          key={language}
-          type="button"
-          onClick={() => setLocale(language)}
-          aria-pressed={locale === language}
-          aria-label={t(names[language])}
-          title={t(names[language])}
-          className={`mono-data flex h-11 w-11 items-center justify-center border-b-2 transition-opacity hover:opacity-100 ${
-            locale === language ? "border-current" : "border-transparent opacity-60"
-          }`}
-        >
-          {language.toUpperCase()}
-        </button>
-      ))}
-    </div>
+    <label
+      data-magnetic
+      data-cursor={t(names[locale])}
+      className="flex h-12 w-36 min-w-0 shrink-0 items-center border border-white transition-colors duration-300 hover:bg-white hover:text-black"
+    >
+      <select
+        value={locale}
+        aria-label={t("Idioma")}
+        title={t(names[locale])}
+        onChange={event => {
+          const selected = event.currentTarget.value;
+          if (isLocale(selected)) setLocale(selected);
+        }}
+        className="mono-label h-full w-full min-w-0 cursor-pointer appearance-none bg-transparent py-2 pl-2.5 pr-7 text-[0.6875rem] tracking-[0.08em] text-inherit"
+      >
+        {locales.map(language => (
+          <option key={language} value={language} className="bg-white text-black">
+            {language.toUpperCase()} — {t(names[language])}
+          </option>
+        ))}
+      </select>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none -ml-6 mr-2 text-xs leading-none"
+      >
+        ▾
+      </span>
+    </label>
   );
 }
