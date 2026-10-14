@@ -12,7 +12,8 @@ export interface ContactProvider {
 }
 
 export class ContactProviderError extends Error {
-  constructor(readonly kind: "unavailable" | "failed" | "timeout") {
+  readonly kind: "unavailable" | "failed" | "timeout";
+  constructor(kind: "unavailable" | "failed" | "timeout") {
     super(
       kind === "unavailable"
         ? "El servicio de contacto no está configurado. No se ha enviado tu consulta. Inténtalo más tarde."
@@ -20,6 +21,7 @@ export class ContactProviderError extends Error {
           ? "El proveedor tardó demasiado en responder. No pudimos confirmar el envío. Inténtalo de nuevo."
           : "No pudimos confirmar el envío con el proveedor de correo. Inténtalo de nuevo más tarde."
     );
+    this.kind = kind;
     this.name = "ContactProviderError";
   }
 }

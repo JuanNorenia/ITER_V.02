@@ -11,11 +11,15 @@ export class ContactGuard {
   private readonly rates = new Map<string, RateEntry>();
   private readonly submissions = new Map<string, number>();
 
-  constructor(
-    private readonly maxEntries = 2048,
-    private readonly maxAttempts = 5,
-    private readonly windowMs = CONTACT_WINDOW_MS
-  ) {}
+  private readonly maxEntries: number;
+  private readonly maxAttempts: number;
+  private readonly windowMs: number;
+
+  constructor(maxEntries = 2048, maxAttempts = 5, windowMs = CONTACT_WINDOW_MS) {
+    this.maxEntries = maxEntries;
+    this.maxAttempts = maxAttempts;
+    this.windowMs = windowMs;
+  }
 
   private hash(value: string): string {
     return createHmac("sha256", this.secret).update(value).digest("hex");
