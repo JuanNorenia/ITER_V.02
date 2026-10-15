@@ -150,6 +150,7 @@ Si usas este mismo servidor como API de Pages, necesita igualmente su origen HTT
 
 ## Si algo falla
 
+- **`npm ci` devuelve `ENOTFOUND` para `npm.mirrors.msh.team`:** el lockfile contiene URLs absolutas de descarga; cambiar el registry en el workflow no corrige esos enlaces guardados. Este proyecto fija `https://registry.npmjs.org/` en `app/.npmrc` y el lockfile debe conservar URLs de ese registry.
 - **Pages no disponible en privado o `configure-pages` falla:** revisa plan, permisos de la cuenta y selección de source; no cambies la visibilidad ni amplíes permisos automáticamente.
 - **Workflow no visible:** debe estar en la rama predeterminada y Actions permitido; la integración/versionado no se realiza en este subtrabajo.
 - **Entorno bloquea deploy:** revisa las reglas de `github-pages` y aprueba solo la rama prevista; no las desactives para saltar la protección.
