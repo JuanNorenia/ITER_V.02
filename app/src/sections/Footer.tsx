@@ -37,7 +37,7 @@ export default function Footer() {
             <Link
               key={item.href}
               to={
-                item.href === "#contacto"
+                item.href === "/contacto"
                   ? contactPath()
                   : homeSectionPath(item.href.slice(1))
               }

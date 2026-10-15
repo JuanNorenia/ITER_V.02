@@ -71,7 +71,7 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
   const openPrivacy = () =>
     window.dispatchEvent(new CustomEvent("iter:privacy"));
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (sendingRef.current) return;
     const form = e.currentTarget;
