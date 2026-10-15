@@ -293,9 +293,10 @@ describe("ES/EN/FR messages", () => {
     const { keys, untranslated } = inspectCopy(path);
     expect(untranslated, "Visible literals must use t()").toEqual([]);
     for (const key of keys) {
-      expect(Object.hasOwn(messages, key), `Missing translation: ${key}`).toBe(
-        true
-      );
+      expect(
+        Object.hasOwn(combinedMessages, key),
+        `Missing translation: ${key}`
+      ).toBe(true);
     }
   });
 });
