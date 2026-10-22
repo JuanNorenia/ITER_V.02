@@ -129,7 +129,8 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
 
     let raf = 0;
     let last = 0;
-    let running = false;
+    let visible = false;
+    let pageVisible = !document.hidden;
     let cols = 0;
     let rows = 0;
     let x = -HORSE_W - 2;
@@ -206,9 +207,10 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
     };
 
     const loop = (now: number) => {
-      raf = requestAnimationFrame(loop);
-      if (!running) return;
-      if (now - last < TICK) return;
+      if (now - last < TICK) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       last = now;
       speed += (speedTarget - speed) * 0.08;
       x += speed;
@@ -216,6 +218,16 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
       if (x > cols + 2) x = -HORSE_W - 2 - Math.random() * 45;
       frame = (frame + 1) % FRAMES.length;
       paint();
+      raf = requestAnimationFrame(loop);
+    };
+    const syncLoop = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      if (visible && pageVisible && !reduced) raf = requestAnimationFrame(loop);
+    };
+    const onVisibilityChange = () => {
+      pageVisible = !document.hidden;
+      syncLoop();
     };
 
     const onEnter = () => {
@@ -231,7 +243,8 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        running = entry.isIntersecting;
+        visible = entry.isIntersecting;
+        syncLoop();
       },
       { threshold: 0.05 },
     );
@@ -243,16 +256,16 @@ export default function HorseStrip({ className = "" }: { className?: string }) {
       frame = 2;
       paint();
     } else {
-      running = true;
-      raf = requestAnimationFrame(loop);
       root.addEventListener("pointerenter", onEnter);
       root.addEventListener("pointerleave", onLeave);
+      document.addEventListener("visibilitychange", onVisibilityChange);
     }
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       root.removeEventListener("pointerenter", onEnter);
       root.removeEventListener("pointerleave", onLeave);
     };

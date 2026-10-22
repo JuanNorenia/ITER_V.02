@@ -24,6 +24,7 @@ export default function Cursor() {
 
     const pos = { x: -100, y: -100, tx: -100, ty: -100, seen: false };
     let raf = 0;
+    let clickTimer = 0;
     let magneticEl: HTMLElement | null = null;
 
     const onMove = (e: PointerEvent) => {
@@ -77,6 +78,22 @@ export default function Cursor() {
     };
 
     const onLeaveWindow = () => root.classList.remove("is-visible");
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      window.clearTimeout(clickTimer);
+      root.classList.add("is-pressed", "is-clicking");
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      root.classList.remove("is-pressed");
+      clickTimer = window.setTimeout(() => root.classList.remove("is-clicking"), 420);
+    };
+    const clearPressed = () => {
+      root.classList.remove("is-pressed", "is-clicking");
+      window.clearTimeout(clickTimer);
+    };
+    const onPointerCancel = clearPressed;
+    const onWindowBlur = clearPressed;
     const onEnterWindow = () => {
       if (pos.seen) root.classList.add("is-visible");
     };
@@ -90,6 +107,10 @@ export default function Cursor() {
     raf = requestAnimationFrame(loop);
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("blur", onWindowBlur);
     document.documentElement.addEventListener(
       "pointerleave",
       onLeaveWindow,
@@ -98,7 +119,12 @@ export default function Cursor() {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(clickTimer);
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("blur", onWindowBlur);
       document.documentElement.removeEventListener(
         "pointerleave",
         onLeaveWindow,

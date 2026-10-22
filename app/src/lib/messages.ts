@@ -77,6 +77,10 @@ export const messages: Record<string, { en: string; fr: string }> = {
       en: "We find better ways to solve real problems through technology, design and engineering.",
       fr: "Nous trouvons de meilleures façons de résoudre des problèmes concrets grâce à la technologie, au design et à l’ingénierie.",
     },
+  "Diseñamos y construimos soluciones digitales para resolver problemas reales.": {
+    en: "We design and build digital solutions to solve real problems.",
+    fr: "Nous concevons et développons des solutions numériques pour résoudre des problèmes concrets.",
+  },
   "Analizamos lo que no funciona, cuestionamos lo establecido y construimos soluciones que hacen las cosas más simples.":
     {
       en: "We analyze what isn’t working, question established practices and build solutions that make things simpler.",
@@ -388,9 +392,17 @@ export const messages: Record<string, { en: string; fr: string }> = {
     en: "Let’s start with the problem.",
     fr: "Commençons par le problème.",
   },
+  "Cuéntanos qué necesita mejorar.": {
+    en: "Tell us what needs to improve.",
+    fr: "Dites-nous ce qui pourrait être amélioré.",
+  },
   "Cuéntanos qué está pasando. Nosotros empezamos por entenderlo.": {
     en: "Tell us what’s happening. We’ll start by understanding it.",
     fr: "Dites-nous ce qui se passe. Nous commencerons par le comprendre.",
+  },
+  "Cuéntanos qué está pasando. En ITER empezamos por entenderlo.": {
+    en: "Tell us what’s happening. At ITER, we start by understanding it.",
+    fr: "Dites-nous ce qui se passe. Chez ITER, nous commençons par le comprendre.",
   },
   "También por correo": { en: "Also by email", fr: "Également par e-mail" },
   "Recibido.": { en: "Received.", fr: "Bien reçu." },
@@ -427,6 +439,10 @@ export const messages: Record<string, { en: string; fr: string }> = {
     en: "Describe the problem, not the solution. That’s our job.",
     fr: "Décrivez le problème, pas la solution. C’est notre travail.",
   },
+  "Cuéntanos qué ocurre, cómo lo resuelves hoy y qué te gustaría mejorar.": {
+    en: "Tell us what’s happening, how you handle it today, and what you’d like to improve.",
+    fr: "Dites-nous ce qui se passe, comment vous le gérez aujourd’hui et ce que vous aimeriez améliorer.",
+  },
   "Presupuesto estimado": { en: "Estimated budget", fr: "Budget estimé" },
   "Selecciona un rango": {
     en: "Select a range",
@@ -446,8 +462,20 @@ export const messages: Record<string, { en: string; fr: string }> = {
     en: "We couldn’t send your inquiry. Please try again.",
     fr: "Nous n’avons pas pu envoyer votre demande. Veuillez réessayer.",
   },
+  "Tus datos siguen en el formulario. Inténtalo de nuevo en unos minutos.": {
+    en: "Your details are still in the form. Please try again in a few minutes.",
+    fr: "Vos informations sont toujours dans le formulaire. Réessayez dans quelques minutes.",
+  },
   Enviar: { en: "Send", fr: "Envoyer" },
   "Enviando…": { en: "Sending…", fr: "Envoi en cours…" },
+  "Enviando tu consulta…": {
+    en: "Sending your enquiry…",
+    fr: "Envoi de votre demande…",
+  },
+  "Enviar consulta ↗": {
+    en: "Send enquiry ↗",
+    fr: "Envoyer la demande ↗",
+  },
   "Enviar mi consulta ↗": {
     en: "Send my inquiry ↗",
     fr: "Envoyer ma demande ↗",

@@ -33,7 +33,7 @@ test("Pages serves prefixed assets and refreshes directly on contact route", asy
   await expect(page).toHaveURL(`${pagesBase}#/contacto?need=software`);
   await expect(page.locator("#f-tipo")).toHaveValue("software");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Empecemos por el problema."
+    "Cuéntanos qué necesita mejorar."
   );
   await page.reload();
   await expect(page).toHaveURL(`${pagesBase}#/contacto?need=software`);

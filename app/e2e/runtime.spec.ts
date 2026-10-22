@@ -104,7 +104,7 @@ async function contactAsciiMetrics(page: Page) {
   return pre;
 }
 
-test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s marquee", async ({
+test("home keeps its red hero accent, dense ASCII, horse and 36s marquee", async ({
   page,
 }) => {
   const errors = collectUnexpectedErrors(page);
@@ -115,11 +115,16 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
     .locator("#top .hero-title .rv-line")
     .nth(2)
     .locator("span > span");
+  const accentRevealClip = await page
+    .locator("#top .hero-title .rv-line")
+    .nth(2)
+    .evaluate(element => getComputedStyle(element).clipPath);
+  expect(accentRevealClip).toMatch(/inset\(-/u);
   const spanishHeroFontSize = await page
     .locator("#top .hero-title")
     .evaluate(element => getComputedStyle(element).fontSize);
   await expect(thirdHeroLine).toContainText("ser así?");
-  await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(226, 37, 27)");
   await expect(thirdHeroLine).toHaveCSS("color", "rgb(255, 255, 255)");
   await expect
     .poll(() => page.locator("#top figure pre").first().textContent())
@@ -137,6 +142,7 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
     "aria-label",
     /caballo galopando/u
   );
+  await page.locator("figure").nth(1).scrollIntoViewIfNeeded();
   await expect
     .poll(() => page.locator("figure").nth(1).locator("pre").last().textContent())
     .toMatch(/#/u);
@@ -173,11 +179,10 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
     .locator("#top .hero-title")
     .evaluate(element => getComputedStyle(element).fontSize);
   expect(englishHeroFontSize).toBe(spanishHeroFontSize);
-  await expect(page.locator("#top .hero-title")).toContainText(
-    "What if it didn’t have to be this way?"
-  );
+  await expect(page.locator("#top .hero-title .rv-line").nth(0)).toContainText("What if it");
+  await expect(page.locator("#top .hero-title .rv-line").nth(1)).toContainText("didn’t have to");
   await expect(thirdHeroLine).toContainText("be this way?");
-  await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(thirdHeroLine).toHaveCSS("background-color", "rgb(226, 37, 27)");
   const englishAccentGeometry = await thirdHeroLine.evaluate(element => {
     const range = document.createRange();
     range.selectNodeContents(element);
@@ -203,7 +208,7 @@ test("home keeps its dark hero accent, red token, dense ASCII, horse and 36s mar
 
   await page.goto("/#/contacto");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Let’s start with the problem."
+    "Tell us what needs to improve."
   );
   expect(errors).toEqual([]);
 });
@@ -244,6 +249,59 @@ test("fine-pointer cursor keeps 12px, 40px and 72px square states with its label
     .hover();
   await expect(box).toHaveCSS("width", "40px");
   await expect(box).toHaveCSS("height", "40px");
+});
+
+test("ITER method steps react to hover and label the custom cursor", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  const step = page.locator("#metodo [data-step='1']");
+  const number = step.locator(".mono-label").first();
+  const marker = step.locator("span[aria-hidden='true']");
+
+  await step.hover();
+  await expect(step).toHaveCSS("opacity", "1");
+  await expect(step).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(number).toHaveCSS("color", "rgb(226, 37, 27)");
+  await expect(marker).toHaveCSS("background-color", "rgb(226, 37, 27)");
+  await expect(page.locator(".iter-cursor__label")).toHaveText("Cuestionar");
+  await expect(page.locator(".iter-cursor__box")).toHaveCSS("width", "72px");
+});
+
+test("section rows and markers react to hover and the cursor animates on left click", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+
+  const frictionNumber = page.locator("#friccion article").first().locator("span[aria-hidden='true']");
+  await expect(frictionNumber).not.toHaveCSS("color", "rgb(226, 37, 27)");
+  await frictionNumber.hover();
+  await expect(frictionNumber).toHaveCSS("color", "rgb(226, 37, 27)");
+
+  const serviceRow = page.locator("#que-hacemos a[data-cursor]").first();
+  const serviceGlyph = serviceRow.locator("svg");
+  await expect(serviceGlyph).not.toHaveCSS("color", "rgb(226, 37, 27)");
+  await serviceRow.hover();
+  await expect(serviceGlyph).toHaveCSS("color", "rgb(226, 37, 27)");
+
+  const principleDot = page.locator("#principios article").first().locator("span[aria-hidden='true']");
+  await expect(principleDot).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await principleDot.hover();
+  await expect(principleDot).toHaveCSS("background-color", "rgb(226, 37, 27)");
+
+  const cursor = page.locator(".iter-cursor");
+  const cursorBox = page.locator(".iter-cursor__box");
+  await page.mouse.down();
+  await expect(cursor).toHaveClass(/is-pressed/);
+  await expect(cursorBox).toHaveCSS("background-color", "rgb(226, 37, 27)");
+  const transitionProperties = await cursorBox.evaluate(
+    element => getComputedStyle(element).transitionProperty
+  );
+  expect(transitionProperties.split(", ")).toContain("transform");
+  await page.mouse.up();
+  await expect(cursor).not.toHaveClass(/is-pressed/);
+  await expect(cursor).toHaveClass(/is-clicking/);
+  await expect(cursor).not.toHaveClass(/is-clicking/);
 });
 
 test("contact ASCII follows a desktop pointer and stays visible on touch and reduced motion", async ({
@@ -322,6 +380,7 @@ test("contact ASCII follows a desktop pointer and stays visible on touch and red
         .first()
         .evaluate(element => getComputedStyle(element).cursor)
     ).not.toBe("none");
+    await reducedPage.goto("http://127.0.0.1:3100/#/");
     await expect(reducedPage.locator(".marquee__track").first()).toHaveCSS(
       "animation-name",
       "none"

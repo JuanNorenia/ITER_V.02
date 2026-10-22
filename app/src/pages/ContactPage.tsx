@@ -14,7 +14,7 @@ export default function ContactPage() {
           <span aria-hidden="true">←</span> {t("Volver al inicio")}
         </Link>
       </div>
-      <Contact initialNeed={search.get("need") ?? ""} />
+      <Contact key={search.get("need") ?? ""} initialNeed={search.get("need") ?? ""} />
     </div>
   );
 }

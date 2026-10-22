@@ -59,7 +59,7 @@ export default function Services() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">02</span> / {t("Qué hacemos")}
+          <span className="bg-red px-1 text-ink">02</span> / {t("Qué hacemos")}
         </p>
       </Reveal>
 
@@ -84,7 +84,7 @@ export default function Services() {
               to={contactPath(service.need)}
               role="listitem"
               data-cursor={t("Consultar")}
-              className="group relative block border-t border-ink/15 py-8 outline-none transition-colors focus-visible:bg-black lg:py-9"
+              className="group red-edge-link relative block border-t border-ink/15 py-8 outline-none transition-colors focus-visible:bg-black lg:py-9"
               aria-label={`${t(service.title)}. ${t("Consultar sobre esta área")}`}
             >
               <div
@@ -95,7 +95,7 @@ export default function Services() {
                 <span className="mono-label col-span-2 text-smoke transition-colors duration-300 group-hover:text-white/50 sm:col-span-1">
                   {service.index}
                 </span>
-                <service.Glyph className="col-span-2 h-9 w-9 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:text-red sm:col-span-1 sm:h-10 sm:w-10" />
+                <service.Glyph className="col-span-2 h-9 w-9 text-ink transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:text-red sm:col-span-1 sm:h-10 sm:w-10" />
                 <div className="col-span-8 min-w-0 sm:col-span-9 lg:col-span-8">
                   <h3 className="display-sub uppercase">{t(service.title)}</h3>
                   <p className="body-text mt-2 max-w-2xl text-smoke transition-colors duration-300 group-hover:text-white/70">
@@ -103,7 +103,7 @@ export default function Services() {
                   </p>
                 </div>
                 <span
-                  className="col-span-12 text-2xl transition-all duration-300 group-hover:translate-x-1 group-hover:text-red lg:col-span-2 lg:text-right"
+                  className="col-span-12 text-2xl transition-all duration-300 group-hover:translate-x-1 group-hover:text-white lg:col-span-2 lg:text-right"
                   aria-hidden="true"
                 >
                   ↗

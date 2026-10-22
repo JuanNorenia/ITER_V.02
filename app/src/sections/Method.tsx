@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useInView } from "@/hooks/useInView";
 import { useLocale } from "@/providers/LocaleProvider";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const steps = [
   {
@@ -38,6 +39,7 @@ const steps = [
  */
 export default function Method() {
   const { t } = useLocale();
+  const reduced = usePrefersReducedMotion();
   const ref = useInView<HTMLElement>(0.05);
   const stepsRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -48,6 +50,10 @@ export default function Method() {
     const container = stepsRef.current;
     const fill = fillRef.current;
     if (!container || !fill) return;
+    if (reduced) {
+      fill.style.transform = "scaleY(0)";
+      return;
+    }
 
     let raf = 0;
     const update = () => {
@@ -71,7 +77,7 @@ export default function Method() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [reduced]);
 
   // Activación de etapas al cruzar el centro visual
   useEffect(() => {
@@ -104,7 +110,7 @@ export default function Method() {
           <div className="lg:sticky lg:top-28">
             <Reveal variant="up">
               <p className="mono-label text-smoke">
-                <span className="text-red">03</span> / {t("Método ITER")}
+                <span className="bg-red px-1 text-ink">03</span> / {t("Método ITER")}
               </p>
             </Reveal>
             <Reveal variant="line" className="mt-6">
@@ -122,7 +128,7 @@ export default function Method() {
             <Reveal variant="up" delay={220} className="mt-10">
               <p className="mono-label border border-ink px-4 py-3 tabular-nums">
                 {t("Etapa")}{" "}
-                <span className="text-red">
+                <span className="bg-red px-1 text-ink">
                   {String(active + 1).padStart(2, "0")}
                 </span>{" "}
                 / 05 — {t(steps[active].title)}
@@ -151,25 +157,26 @@ export default function Method() {
                 <Reveal key={s.n} variant="up" delay={i * 80}>
                   <article
                     data-step={i}
-                    className={`relative border-b border-line py-10 transition-opacity duration-500 first:pt-4 lg:py-12 ${
+                    data-cursor={t(s.title)}
+                    className={`group relative border-b border-line py-10 transition-[opacity,background-color] duration-300 first:pt-4 hover:bg-black hover:opacity-100 hover:text-white lg:py-12 ${
                       isActive ? "opacity-100" : "opacity-45"
                     }`}
                   >
                     <span
-                      className={`absolute -left-10 top-5 flex h-3 w-3 items-center justify-center border transition-colors duration-300 sm:-left-14 lg:top-[3.4rem] ${
+                      className={`absolute -left-10 top-5 flex h-3 w-3 items-center justify-center border transition-all duration-300 group-hover:scale-125 group-hover:border-red group-hover:bg-red sm:-left-14 lg:top-[3.4rem] ${
                         isActive ? "border-red bg-red" : "border-black bg-paper"
                       }`}
                       aria-hidden="true"
                     />
                     <div className="flex items-baseline gap-4">
-                      <span className="mono-label shrink-0 text-smoke">
+                      <span className="mono-label shrink-0 text-smoke transition-colors duration-300 group-hover:text-red">
                         {s.n}
                       </span>
-                      <h3 className="display-sub min-w-0 uppercase">
+                      <h3 className="display-sub min-w-0 uppercase transition-colors duration-300 group-hover:text-white">
                         {t(s.title)}
                       </h3>
                     </div>
-                    <p className="body-text mt-3 max-w-lg text-smoke">
+                    <p className="body-text mt-3 max-w-lg text-smoke transition-colors duration-300 group-hover:text-white/70">
                       {t(s.text)}
                     </p>
                   </article>

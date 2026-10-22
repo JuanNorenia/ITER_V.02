@@ -106,7 +106,8 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
 
     let raf = 0;
     let last = 0;
-    let running = false;
+    let visible = false;
+    let pageVisible = !document.hidden;
     let cols = 0;
     let rows = 0;
     let fieldW = 0;
@@ -188,13 +189,24 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
     };
 
     const loop = (now: number) => {
-      raf = requestAnimationFrame(loop);
-      if (!running) return;
-      if (now - last < FPS_INTERVAL) return;
+      if (now - last < FPS_INTERVAL) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       last = now;
       const tSec = (now - start) / 1000;
       const u = (tSec % 9) / 9;
       render(u, tSec);
+      raf = requestAnimationFrame(loop);
+    };
+    const syncLoop = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      if (visible && pageVisible && !reduced) raf = requestAnimationFrame(loop);
+    };
+    const onVisibilityChange = () => {
+      pageVisible = !document.hidden;
+      syncLoop();
     };
 
     const onPointer = (e: PointerEvent) => {
@@ -217,7 +229,8 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        running = entry.isIntersecting;
+        visible = entry.isIntersecting;
+        syncLoop();
       },
       { threshold: 0.05 },
     );
@@ -227,16 +240,16 @@ export default function AsciiStudy({ className = "" }: { className?: string }) {
       // Alternativa estática: un fotograma representativo del ciclo
       render(0.42, 0);
     } else {
-      running = true;
-      raf = requestAnimationFrame(loop);
       root.addEventListener("pointermove", onPointer);
       root.addEventListener("pointerleave", onLeave);
+      document.addEventListener("visibilitychange", onVisibilityChange);
     }
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       root.removeEventListener("pointermove", onPointer);
       root.removeEventListener("pointerleave", onLeave);
       void fieldW;

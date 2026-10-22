@@ -17,9 +17,9 @@ type Status = "idle" | "sending" | "success" | "error";
 type Errors = Partial<Record<keyof ContactInput, string>>;
 
 const inputCls =
-  "min-w-0 w-full border-b border-ink/30 bg-transparent py-3 font-display text-lg outline-none transition-colors placeholder:text-line focus:border-black";
+  "min-w-0 w-full border border-line bg-white px-3 py-3 font-display text-lg outline-none transition-colors placeholder:text-smoke/60 hover:border-ink/50 focus:border-red focus:ring-2 focus:ring-red/20 data-[invalid=true]:border-red";
 const labelCls = "mono-label text-smoke";
-const errorCls = "mono-data mt-2 text-red";
+const errorCls = "mono-data mt-2 border-l-2 border-red pl-2 text-ink";
 
 /**
  * Contacto independiente: validación compartida y confirmación real del proveedor.
@@ -145,17 +145,17 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
         <div className="min-w-0 self-start bg-paper p-4 lg:col-span-5 lg:p-6">
           <Reveal variant="up">
             <p className="mono-label text-smoke">
-              <span className="text-red">07</span> / {t("Contacto")}
+              <span className="bg-red px-1 text-ink">07</span> / {t("Contacto")}
             </p>
           </Reveal>
           <Reveal variant="line" className="mt-6">
             <h1 id="contacto-title" className="display-section">
-              {t("Empecemos por el problema.")}
+              {t("Cuéntanos qué necesita mejorar.")}
             </h1>
           </Reveal>
           <Reveal variant="up" delay={140} className="mt-6 max-w-md">
             <p className="body-text text-smoke">
-              {t("Cuéntanos qué está pasando. Nosotros empezamos por entenderlo.")}
+              {t("Cuéntanos qué está pasando. En ITER empezamos por entenderlo.")}
             </p>
           </Reveal>
           {site.contactEmail && (
@@ -177,7 +177,7 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
               ref={successRef}
               role="status"
               tabIndex={-1}
-              className="flex min-h-[420px] min-w-0 flex-col justify-center border border-black bg-paper p-5 sm:p-8 lg:p-12"
+              className="flex min-h-[420px] min-w-0 flex-col justify-center border-l-4 border-l-red border-y border-r border-black bg-paper p-5 sm:p-8 lg:p-12"
             >
               <p className="display-section">{t("Recibido.")}</p>
               <p className="body-text mt-6 max-w-md text-smoke">
@@ -194,7 +194,7 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
             </div>
           ) : (
             <Reveal variant="up" delay={120}>
-              <form onSubmit={onSubmit} noValidate aria-busy={status === "sending"} className="border border-line bg-paper p-5 sm:p-8">
+              <form onSubmit={onSubmit} noValidate aria-busy={status === "sending"} className="border border-line border-t-2 border-t-red bg-paper p-5 sm:p-8">
                 <fieldset disabled={status === "sending"} className="min-w-0 space-y-8">
                 {/* Honeypot: invisible para humanos, irresistible para bots */}
                 <div
@@ -319,7 +319,7 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
                     rows={5}
                     value={values.mensaje}
                     onChange={set("mensaje")}
-                    placeholder={t("Describe el problema, no la solución. Eso es nuestro trabajo.")}
+                    placeholder={t("Cuéntanos qué ocurre, cómo lo resuelves hoy y qué te gustaría mejorar.")}
                     className={`${inputCls} resize-y`}
                     data-invalid={!!errors.mensaje}
                     aria-invalid={!!errors.mensaje}
@@ -360,7 +360,7 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
                       required
                       checked={values.consentimiento}
                       onChange={set("consentimiento")}
-                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer appearance-none border border-ink bg-transparent transition-colors checked:border-red checked:bg-red"
+                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[var(--red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red"
                       data-invalid={!!errors.consentimiento}
                       aria-invalid={!!errors.consentimiento}
                       aria-describedby={
@@ -389,10 +389,13 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
                 {status === "error" && (
                   <div
                     role="alert"
-                    className="border border-black bg-mist p-4"
+                    className="border border-black border-l-4 border-l-red bg-mist p-4"
                   >
                     <p className="mono-label">{t("No se pudo enviar")}</p>
                     <p className="body-text mt-2 text-sm">{t(serverMsg)}</p>
+                    <p className="body-text mt-2 text-sm text-smoke">
+                      {t("Tus datos siguen en el formulario. Inténtalo de nuevo en unos minutos.")}
+                    </p>
                   </div>
                 )}
 
@@ -401,9 +404,10 @@ export default function Contact({ initialNeed = "" }: { initialNeed?: string }) 
                   disabled={status === "sending"}
                   data-magnetic
                   data-cursor={t("Enviar")}
-                  className="btn-sweep btn-sweep--red mono-label inline-flex min-h-14 w-full max-w-full items-center justify-center border border-black bg-black px-7 py-4 text-center text-white transition-opacity disabled:opacity-60 sm:w-auto"
+                  className="btn-sweep btn-sweep--red red-edge-link mono-label inline-flex min-h-14 w-full max-w-full items-center justify-center border border-red bg-red px-7 py-4 text-center text-ink transition-opacity disabled:opacity-60 sm:w-auto"
                 >
-                  {t(status === "sending" ? "Enviando…" : "Enviar mi consulta ↗")}
+                  {status === "sending" && <span className="contact-spinner mr-3 inline-block h-4 w-4 border-2 border-ink border-r-transparent" aria-hidden="true" />}
+                  {t(status === "sending" ? "Enviando tu consulta…" : "Enviar consulta ↗")}
                 </button>
 
                 <p className="mono-data text-smoke">

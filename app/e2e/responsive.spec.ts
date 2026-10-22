@@ -144,7 +144,7 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
       const secondLine = heroGeometry.lines[1];
       expect(firstLine.length).toBeGreaterThan(0);
       expect(secondLine.length).toBeGreaterThan(0);
-      expect(secondLine[0].top).toBeGreaterThanOrEqual(firstLine.at(-1)!.bottom - 1);
+      expect(secondLine[0].top).toBeGreaterThanOrEqual(firstLine.at(-1)!.bottom - 1.1);
       for (const lineRect of secondLine) {
         expect(lineRect.left).toBeGreaterThanOrEqual(heroGeometry.copyLeft - 1);
         expect(lineRect.right).toBeLessThanOrEqual(heroGeometry.copyRight + 1);

@@ -45,7 +45,7 @@ export default function Hero() {
               {t("tuviera que")}
             </Reveal>
             <Reveal variant="line" delay={320}>
-              <span className="hero-accent bg-black px-[0.12em] text-white">
+              <span className="hero-accent bg-red px-[0.12em] text-white">
                 {t("ser así?")}
               </span>
             </Reveal>
@@ -53,7 +53,7 @@ export default function Hero() {
 
           <Reveal variant="up" delay={520} className="mt-7 max-w-xl">
             <p className="display-sub">
-              {t("Encontramos mejores formas de resolver problemas reales con tecnología, diseño e ingeniería.")}
+              {t("Diseñamos y construimos soluciones digitales para resolver problemas reales.")}
             </p>
           </Reveal>
 
@@ -69,14 +69,14 @@ export default function Hero() {
                 to={contactPath()}
                 data-magnetic
                 data-cursor={t("Hablemos")}
-                className="btn-sweep btn-sweep--paper mono-label inline-flex min-h-12 items-center justify-center border border-black bg-black px-7 py-3 text-white"
+                className="btn-sweep btn-sweep--red red-edge-link mono-label inline-flex min-h-12 items-center justify-center border border-red bg-red px-7 py-3 text-ink"
               >
                 {t("Cuéntanos qué necesitas ↗")}
               </Link>
               <Link
                 to={homeSectionPath("metodo")}
                 data-magnetic
-                className="btn-sweep btn-sweep--ink mono-label inline-flex min-h-12 items-center justify-center border border-black px-7 py-3 text-ink"
+                className="btn-sweep btn-sweep--ink red-edge-link mono-label inline-flex min-h-12 items-center justify-center border border-black px-7 py-3 text-ink"
               >
                 {t("Así trabajamos ↓")}
               </Link>

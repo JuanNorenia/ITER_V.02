@@ -37,7 +37,7 @@ export default function Friction() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">01</span> / {t("La fricción")}
+          <span className="bg-red px-1 text-ink">01</span> / {t("La fricción")}
         </p>
       </Reveal>
 
@@ -74,8 +74,8 @@ export default function Friction() {
         {situations.map((s, i) => (
           <Reveal key={s.n} variant="up" delay={i * 110}>
             <article
-              className="group relative border-t border-line py-8 transition-colors duration-300 lg:py-10"
               data-cursor={t("Fricción")}
+              className="group relative border-t border-line py-8 transition-colors duration-300 lg:py-10"
             >
               <div
                 className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-black transition-transform duration-500 ease-iter group-hover:scale-x-100"
@@ -89,17 +89,11 @@ export default function Friction() {
                   {s.n}
                 </span>
                 <div className="col-span-9 min-w-0 sm:col-span-10 lg:col-span-8">
-                  <h3 className="display-sub uppercase">{t(s.title)}</h3>
+                  <h3 className="display-sub uppercase transition-colors duration-300 group-hover:text-white">{t(s.title)}</h3>
                   <p className="body-text mt-3 max-w-xl text-smoke transition-colors duration-300 group-hover:text-white/70">
                     {t(s.text)}
                   </p>
                 </div>
-                <span
-                  className="mono-label col-span-12 mt-2 opacity-0 transition-opacity duration-300 group-hover:opacity-60 lg:col-span-2 lg:mt-0 lg:text-right"
-                  aria-hidden="true"
-                >
-                  {t("Fricción →")}
-                </span>
               </div>
             </article>
           </Reveal>

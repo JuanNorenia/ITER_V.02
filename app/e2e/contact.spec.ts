@@ -63,7 +63,7 @@ test("contact form uses the Spanish field contract and validates required inputs
   await page.goto("/#/contacto");
 
   await expect(
-    page.getByRole("heading", { level: 1, name: "Empecemos por el problema." })
+    page.getByRole("heading", { level: 1, name: "Cuéntanos qué necesita mejorar." })
   ).toBeVisible();
   for (const [id, name] of [
     ["f-nombre", "nombre"],
@@ -113,14 +113,14 @@ test("field errors and accessible names are translated in English and French", a
     {
       sourceName: "Idioma",
       target: "en",
-      title: "Let’s start with the problem.",
+      title: "Tell us what needs to improve.",
       nameError: "Tell us your name (at least 2 characters).",
       consentError: "We need your consent to process your data.",
     },
     {
       sourceName: "Language",
       target: "fr",
-      title: "Commençons par le problème.",
+      title: "Dites-nous ce qui pourrait être amélioré.",
       nameError: "Indiquez votre nom (au moins 2 caractères).",
       consentError: "Nous avons besoin de votre consentement pour traiter vos données.",
     },

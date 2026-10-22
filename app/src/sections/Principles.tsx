@@ -37,7 +37,7 @@ export default function Principles() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">04</span> / {t("Cómo pensamos")}
+          <span className="bg-red px-1 text-ink">04</span> / {t("Cómo pensamos")}
         </p>
       </Reveal>
 
@@ -67,19 +67,19 @@ export default function Principles() {
       <div className="mt-16 grid grid-cols-1 gap-px bg-ink/15 lg:grid-cols-3">
         {principles.map((p, i) => (
           <Reveal key={p.n} variant="up" delay={i * 120} className="min-w-0">
-            <article className="group flex h-full flex-col justify-between bg-mist p-6 transition-colors duration-300 hover:bg-black hover:text-white lg:min-h-[280px] lg:p-8">
+            <article data-cursor={t("Principio")} className="group flex h-full flex-col justify-between bg-mist p-6 transition-colors duration-300 hover:bg-black hover:text-white lg:min-h-[280px] lg:p-8">
               <div className="flex items-start justify-between">
-                <span className="mono-label text-smoke group-hover:text-white/50">
+                <span className="mono-label text-smoke transition-colors duration-300 group-hover:text-white/50">
                   {p.n}
                 </span>
                 <span
-                  className="h-2.5 w-2.5 border border-current opacity-30 transition-all duration-300 group-hover:border-red group-hover:bg-red group-hover:opacity-100"
+                  className="h-2.5 w-2.5 border border-ink/30 bg-transparent transition-all duration-300 group-hover:border-red group-hover:bg-red group-hover:opacity-100"
                   aria-hidden="true"
                 />
               </div>
               <div className="mt-14">
-                <h3 className="display-sub uppercase">{t(p.title)}</h3>
-                <p className="body-text mt-3 text-smoke group-hover:text-white/70">
+                <h3 className="display-sub uppercase transition-colors duration-300 group-hover:text-white">{t(p.title)}</h3>
+                <p className="body-text mt-3 text-smoke transition-colors duration-300 group-hover:text-white/70">
                   {t(p.text)}
                 </p>
               </div>

@@ -86,7 +86,7 @@ export default function ContactAsciiBackground() {
   }, [fine, reduced]);
 
   return (
-    <div ref={rootRef} className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+    <div ref={rootRef} className="contact-ascii pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
       <pre ref={preRef} className="absolute inset-0 m-0 select-none overflow-hidden whitespace-pre p-0 font-mono text-ink/45" />
     </div>
   );

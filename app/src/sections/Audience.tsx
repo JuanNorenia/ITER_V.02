@@ -40,7 +40,7 @@ export default function Audience() {
     >
       <Reveal variant="up">
         <p className="mono-label text-smoke">
-          <span className="text-red">05</span> / {t("Para quién")}
+          <span className="bg-red px-1 text-ink">05</span> / {t("Para quién")}
         </p>
       </Reveal>
 
@@ -64,7 +64,7 @@ export default function Audience() {
             <Link
               to={contactPath()}
               data-cursor={t("Ese soy yo")}
-              className="group flex h-full min-h-[180px] flex-col justify-between bg-paper p-6 outline-none transition-colors duration-300 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white lg:min-h-[220px] lg:p-8"
+              className="group red-edge-link flex h-full min-h-[180px] flex-col justify-between bg-paper p-6 outline-none transition-colors duration-300 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white lg:min-h-[220px] lg:p-8"
             >
               <span className="mono-label text-smoke transition-colors duration-300 group-hover:text-white/50">
                 {p.n}
@@ -72,7 +72,7 @@ export default function Audience() {
               <div className="mt-10 flex items-end justify-between gap-4">
                 <p className="display-sub min-w-0 max-w-md">{t(p.text)}</p>
                 <span
-                  className="shrink-0 text-2xl opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:text-red group-hover:opacity-100"
+                  className="shrink-0 text-2xl text-red opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 group-focus-visible:translate-x-1 group-focus-visible:opacity-100"
                   aria-hidden="true"
                 >
                   ↗

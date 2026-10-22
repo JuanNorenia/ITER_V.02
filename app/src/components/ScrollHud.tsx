@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 /**
  * HUD DE RECORRIDO
@@ -23,6 +24,7 @@ const SECTIONS = [
 
 export default function ScrollHud() {
   const { t } = useLocale();
+  const reduced = usePrefersReducedMotion();
   const barRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState<(typeof SECTIONS)[number]>(
@@ -31,6 +33,11 @@ export default function ScrollHud() {
 
   // Progreso total: barra superior + riel lateral
   useEffect(() => {
+    if (reduced) {
+      if (barRef.current) barRef.current.style.transform = "scaleX(0)";
+      if (fillRef.current) fillRef.current.style.transform = "scaleY(0)";
+      return;
+    }
     let raf = 0;
     const update = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -54,7 +61,7 @@ export default function ScrollHud() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [reduced]);
 
   // Sección activa
   useEffect(() => {

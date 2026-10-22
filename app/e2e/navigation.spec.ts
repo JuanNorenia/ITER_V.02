@@ -40,7 +40,7 @@ test("contact route is independent and keeps the need query for each service", a
     expect(new URL(page.url()).hash).toBe(`#/contacto?need=${need}`);
     await expect(page.locator("#f-tipo")).toHaveValue(need);
     await expect(
-      page.getByRole("heading", { level: 1, name: "Empecemos por el problema." })
+      page.getByRole("heading", { level: 1, name: "Cuéntanos qué necesita mejorar." })
     ).toBeVisible();
   }
 
@@ -48,7 +48,7 @@ test("contact route is independent and keeps the need query for each service", a
   await expect(page.locator("#f-nombre")).toBeVisible();
   await expect(page.locator("#f-tipo")).toHaveValue("");
   await expect(page.locator("#main-content h1")).toHaveText(
-    "Empecemos por el problema."
+    "Cuéntanos qué necesita mejorar."
   );
 });
 
@@ -56,8 +56,12 @@ test("language controls translate accessible names, metadata and persist the cho
   page,
 }) => {
   await page.addInitScript(() => {
-    if (window.location.origin !== "null") {
+    if (
+      window.location.origin !== "null" &&
+      !window.sessionStorage.getItem("iter:e2e-clean")
+    ) {
       window.localStorage.removeItem("iter:locale");
+      window.sessionStorage.setItem("iter:e2e-clean", "done");
     }
   });
   await page.goto("/#/");
@@ -79,7 +83,7 @@ test("language controls translate accessible names, metadata and persist the cho
     "FR — Francés",
   ]);
   const [selectBounds, contactBounds] = await Promise.all([
-    spanishSelect.boundingBox(),
+    spanishSelect.locator("xpath=..").boundingBox(),
     page.locator("header nav a").last().boundingBox(),
   ]);
   expect(selectBounds).not.toBeNull();
@@ -92,7 +96,7 @@ test("language controls translate accessible names, metadata and persist the cho
   await expect(page).toHaveTitle("ITER — We find better ways to solve problems");
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    "We design and build technology solutions to simplify processes, automate tasks and solve real problems."
+    "We design and build digital solutions to solve real problems."
   );
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
@@ -132,7 +136,7 @@ test("language controls translate accessible names, metadata and persist the cho
   await expect(page).toHaveTitle("ITER — Contact");
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    "Dites-nous ce qui se passe. Nous commencerons par le comprendre."
+    "Dites-nous ce qui se passe. Chez ITER, nous commençons par le comprendre."
   );
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
@@ -150,7 +154,7 @@ test("mobile menu is inert while closed, keyboard reachable, and closes on Escap
   await page.goto("/#/");
 
   const menu = page.locator("#menu-movil");
-  const toggle = page.getByRole("button", { name: "Abrir menú" });
+  const toggle = page.locator('button[aria-controls="menu-movil"]');
   await expect(toggle).toBeVisible();
   await expect(menu).toHaveAttribute("aria-hidden", "true");
   await expect(menu).toHaveAttribute("inert", "");

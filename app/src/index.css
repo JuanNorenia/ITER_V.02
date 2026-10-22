@@ -16,7 +16,7 @@
   --line: #d9d9d9;
   --smoke: #6e6e6e;
   /* Único acento cromático del sistema: rojo de intervención.
-     Marca estado activo, error y el momento de conversión. Nunca decora. */
+     Marca acciones, énfasis, progreso y estados sobre la base neutra. */
   --red: #e2251b;
 
   --font-display: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -105,6 +105,7 @@
 
   .hero-title {
     font-size: clamp(2rem, 9.5cqw, 7.5rem);
+    line-height: 1.085;
   }
 
   .hero-accent {
@@ -179,7 +180,9 @@
   /* Línea de titular: se ensambla desde abajo con recorte */
   .rv-line {
     display: block;
-    overflow: hidden;
+    /* Give accents and the tilde room outside the font's tight line box. */
+    overflow: visible;
+    clip-path: inset(-0.18em 0 -0.1em);
   }
   .rv-line > span {
     display: block;
@@ -242,6 +245,7 @@
     opacity: 1;
   }
   .iter-cursor__box {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -253,7 +257,8 @@
       width 0.28s var(--ease-out),
       height 0.28s var(--ease-out),
       margin 0.28s var(--ease-out),
-      background-color 0.28s var(--ease-out);
+      background-color 0.28s var(--ease-out),
+      transform 0.2s var(--ease-out);
   }
   .iter-cursor.is-active .iter-cursor__box {
     width: 40px;
@@ -278,6 +283,25 @@
   }
   .iter-cursor.has-label .iter-cursor__label {
     opacity: 1;
+  }
+  .iter-cursor.is-pressed .iter-cursor__box {
+    background: var(--red);
+    transform: scale(0.78) rotate(45deg);
+    transition-duration: 0.18s;
+  }
+  .iter-cursor.is-clicking .iter-cursor__label {
+    opacity: 0;
+  }
+  .iter-cursor.is-clicking .iter-cursor__box::after {
+    position: absolute;
+    inset: -8px;
+    border: 1px solid var(--red);
+    content: "";
+    animation: cursor-click-pulse 0.42s var(--ease-out) both;
+  }
+  @keyframes cursor-click-pulse {
+    from { opacity: 0.9; transform: scale(0.65); }
+    to { opacity: 0; transform: scale(1.8); }
   }
 
   /* ── Marquee ────────────────────────────────────────────────── */
@@ -370,6 +394,31 @@
     transform-origin: left;
   }
 
+  .red-edge-link {
+    position: relative;
+  }
+  .red-edge-link::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease-out);
+    pointer-events: none;
+  }
+  .red-edge-link:hover::after,
+  .red-edge-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .red-edge-link:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 3px;
+  }
+
   .ease-iter {
     transition-timing-function: var(--ease-inout);
   }
@@ -404,7 +453,7 @@
   }
   /* Intervención roja: el barrido del CTA de conversión */
   .btn-sweep--red::before {
-    background: var(--red);
+    background: var(--ink);
   }
   .btn-sweep--red:hover,
   .btn-sweep--red:focus-visible {
@@ -417,5 +466,20 @@
   .btn-sweep--paper:hover,
   .btn-sweep--paper:focus-visible {
     color: var(--ink);
+  }
+
+  .contact-ascii pre {
+    mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 10%) 35%, #000 72%);
+  }
+
+  .contact-spinner {
+    animation: contact-spin 0.9s linear infinite;
+  }
+  @keyframes contact-spin {
+    to { transform: rotate(1turn); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .contact-spinner { animation: none; }
+    .red-edge-link::after { transition: none; }
   }
 }

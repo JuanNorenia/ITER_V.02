@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
 
 /**
@@ -14,6 +15,27 @@ export default function Marquee({
   className?: string;
 }) {
   const { t } = useLocale();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    const track = trackRef.current;
+    if (!root || !track) return;
+    let visible = false;
+    const sync = () => {
+      track.style.animationPlayState = visible && !document.hidden ? "running" : "paused";
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(root);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
   const row = (copy: "first" | "second") => (
     <div className="marquee__group" key={copy}>
       {items.map((item, i) => (
@@ -29,12 +51,13 @@ export default function Marquee({
 
   return (
     <div
+      ref={rootRef}
       className={`marquee hairline-t hairline-b min-w-0 max-w-full py-3 ${
         dark ? "border-white/20 bg-black text-white" : "bg-paper text-ink"
       } ${className}`}
       aria-hidden="true"
     >
-      <div className="marquee__track mono-label">
+      <div ref={trackRef} className="marquee__track mono-label">
         {row("first")}
         {row("second")}
       </div>

@@ -21,8 +21,8 @@ function PageEffects() {
     );
     const description = t(
       contact
-        ? "Cuéntanos qué está pasando. Nosotros empezamos por entenderlo."
-        : "Diseñamos y construimos soluciones tecnológicas para simplificar procesos, automatizar tareas y resolver problemas reales.",
+        ? "Cuéntanos qué está pasando. En ITER empezamos por entenderlo."
+        : "Diseñamos y construimos soluciones digitales para resolver problemas reales.",
     );
     document.title = title;
     document.querySelector('meta[name="description"]')?.setAttribute("content", description);

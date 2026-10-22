@@ -21,7 +21,7 @@ export default function FinalCta() {
     >
       <Reveal variant="up">
         <p className="mono-label text-white/50">
-          <span className="text-red">06</span> / {t("Conversación")}
+          <span className="bg-red px-1 text-ink">06</span> / {t("Conversación")}
         </p>
       </Reveal>
 
@@ -66,7 +66,7 @@ export default function FinalCta() {
             to={contactPath()}
             data-magnetic
             data-cursor={t("Empezar")}
-            className="btn-sweep btn-sweep--ink mono-label inline-flex min-h-14 min-w-0 max-w-full items-center justify-center whitespace-normal border border-white bg-white px-9 py-4 text-center text-black"
+            className="btn-sweep btn-sweep--red red-edge-link mono-label inline-flex min-h-14 min-w-0 max-w-full items-center justify-center whitespace-normal border border-red bg-red px-9 py-4 text-center text-ink"
           >
             {t("Hablemos de tu proyecto ↗")}
           </Link>
