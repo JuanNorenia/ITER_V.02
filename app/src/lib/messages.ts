@@ -1,5 +1,23 @@
 export const messages: Record<string, { en: string; fr: string }> = {
   // Metadata and shared navigation. Spanish keys remain the original copy.
+  "ITER Colombia | Software a medida y automatización": {
+    en: "ITER Colombia | Custom software and automation",
+    fr: "ITER Colombie | Logiciels sur mesure et automatisation",
+  },
+  "Diseñamos software a medida, productos digitales y automatización de procesos para resolver problemas reales en Colombia.":
+    {
+      en: "We design custom software, digital products and process automation to solve real problems in Colombia.",
+      fr: "Nous concevons des logiciels sur mesure, des produits numériques et l’automatisation des processus pour résoudre des problèmes concrets en Colombie.",
+    },
+  "ITER — Página no encontrada": {
+    en: "ITER — Page not found",
+    fr: "ITER — Page introuvable",
+  },
+  "La dirección que buscas cambió o ya no está disponible. Volvamos a encontrar el camino.":
+    {
+      en: "The address you’re looking for has changed or is no longer available. Let’s find another way.",
+      fr: "L’adresse recherchée a changé ou n’est plus disponible. Retrouvons notre chemin.",
+    },
   "ITER — Encontramos mejores formas de resolver problemas": {
     en: "ITER — We find better ways to solve problems",
     fr: "ITER — Nous trouvons de meilleures façons de résoudre les problèmes",
@@ -33,6 +51,20 @@ export const messages: Record<string, { en: string; fr: string }> = {
   Francés: { en: "French", fr: "Français" },
   "Ir al contenido": { en: "Skip to content", fr: "Aller au contenu" },
   "Volver al inicio": { en: "Back to home", fr: "Retour à l’accueil" },
+  "ITER / Ruta no encontrada": {
+    en: "ITER / Route not found",
+    fr: "ITER / Page introuvable",
+  },
+  "Fuera de la retícula": { en: "Outside the grid", fr: "Hors de la grille" },
+  "Esta forma no existe.": {
+    en: "This form does not exist.",
+    fr: "Cette forme n’existe pas.",
+  },
+  "Estructura → intervención → transformación": {
+    en: "Structure → intervention → transformation",
+    fr: "Structure → intervention → transformation",
+  },
+  Cargando: { en: "Loading", fr: "Chargement" },
   "Encontramos la forma.": {
     en: "We find a way.",
     fr: "Nous trouvons la voie.",
@@ -77,10 +109,11 @@ export const messages: Record<string, { en: string; fr: string }> = {
       en: "We find better ways to solve real problems through technology, design and engineering.",
       fr: "Nous trouvons de meilleures façons de résoudre des problèmes concrets grâce à la technologie, au design et à l’ingénierie.",
     },
-  "Diseñamos y construimos soluciones digitales para resolver problemas reales.": {
-    en: "We design and build digital solutions to solve real problems.",
-    fr: "Nous concevons et développons des solutions numériques pour résoudre des problèmes concrets.",
-  },
+  "Diseñamos y construimos soluciones digitales para resolver problemas reales.":
+    {
+      en: "We design and build digital solutions to solve real problems.",
+      fr: "Nous concevons et développons des solutions numériques pour résoudre des problèmes concrets.",
+    },
   "Analizamos lo que no funciona, cuestionamos lo establecido y construimos soluciones que hacen las cosas más simples.":
     {
       en: "We analyze what isn’t working, question established practices and build solutions that make things simpler.",
@@ -591,38 +624,45 @@ export const messages: Record<string, { en: string; fr: string }> = {
       en: "Data is transmitted encrypted and stored with restricted access. System credentials and keys are never exposed in the browser.",
       fr: "Les données sont transmises de manière chiffrée et conservées avec un accès restreint. Les identifiants et les clés du système ne sont jamais exposés dans le navigateur.",
     },
-  "El formulario necesita una API configurada para enviar consultas. No se ha enviado tu mensaje. Inténtalo más tarde.": {
-    en: "The contact form needs a configured API to send enquiries. Your message has not been sent. Please try again later.",
-    fr: "Le formulaire nécessite une API configurée pour envoyer les demandes. Votre message n’a pas été envoyé. Réessayez plus tard.",
-  },
-  "El servicio de contacto no está configurado. No se ha enviado tu consulta. Inténtalo más tarde.": {
-    en: "The contact service is not configured. Your enquiry has not been sent. Please try again later.",
-    fr: "Le service de contact n’est pas configuré. Votre demande n’a pas été envoyée. Réessayez plus tard.",
-  },
-  "El proveedor tardó demasiado en responder. No pudimos confirmar el envío. Inténtalo de nuevo.": {
-    en: "The provider took too long to respond. We could not confirm the submission. Please try again.",
-    fr: "Le fournisseur a mis trop de temps à répondre. Nous n’avons pas pu confirmer l’envoi. Réessayez.",
-  },
-  "No pudimos confirmar el envío con el proveedor de correo. Inténtalo de nuevo más tarde.": {
-    en: "We could not confirm the submission with the email provider. Please try again later.",
-    fr: "Nous n’avons pas pu confirmer l’envoi auprès du fournisseur de messagerie. Réessayez plus tard.",
-  },
-  "No pudimos confirmar el envío de tu consulta. Inténtalo de nuevo más tarde.": {
-    en: "We could not confirm that your enquiry was sent. Please try again later.",
-    fr: "Nous n’avons pas pu confirmer l’envoi de votre demande. Réessayez plus tard.",
-  },
+  "El formulario necesita una API configurada para enviar consultas. No se ha enviado tu mensaje. Inténtalo más tarde.":
+    {
+      en: "The contact form needs a configured API to send enquiries. Your message has not been sent. Please try again later.",
+      fr: "Le formulaire nécessite une API configurée pour envoyer les demandes. Votre message n’a pas été envoyé. Réessayez plus tard.",
+    },
+  "El servicio de contacto no está configurado. No se ha enviado tu consulta. Inténtalo más tarde.":
+    {
+      en: "The contact service is not configured. Your enquiry has not been sent. Please try again later.",
+      fr: "Le service de contact n’est pas configuré. Votre demande n’a pas été envoyée. Réessayez plus tard.",
+    },
+  "El proveedor tardó demasiado en responder. No pudimos confirmar el envío. Inténtalo de nuevo.":
+    {
+      en: "The provider took too long to respond. We could not confirm the submission. Please try again.",
+      fr: "Le fournisseur a mis trop de temps à répondre. Nous n’avons pas pu confirmer l’envoi. Réessayez.",
+    },
+  "No pudimos confirmar el envío con el proveedor de correo. Inténtalo de nuevo más tarde.":
+    {
+      en: "We could not confirm the submission with the email provider. Please try again later.",
+      fr: "Nous n’avons pas pu confirmer l’envoi auprès du fournisseur de messagerie. Réessayez plus tard.",
+    },
+  "No pudimos confirmar el envío de tu consulta. Inténtalo de nuevo más tarde.":
+    {
+      en: "We could not confirm that your enquiry was sent. Please try again later.",
+      fr: "Nous n’avons pas pu confirmer l’envoi de votre demande. Réessayez plus tard.",
+    },
   "Revisa los datos del formulario e inténtalo de nuevo.": {
     en: "Check the form details and try again.",
     fr: "Vérifiez les informations du formulaire et réessayez.",
   },
-  "El formulario se envió demasiado rápido o ha caducado. Vuelve a abrirlo e inténtalo de nuevo.": {
-    en: "The form was submitted too quickly or has expired. Reopen it and try again.",
-    fr: "Le formulaire a été envoyé trop rapidement ou a expiré. Rouvrez-le et réessayez.",
-  },
-  "Esta consulta ya se ha enviado o está en proceso. Espera unos minutos antes de repetirla.": {
-    en: "This enquiry has already been sent or is being processed. Wait a few minutes before trying again.",
-    fr: "Cette demande a déjà été envoyée ou est en cours de traitement. Attendez quelques minutes avant de réessayer.",
-  },
+  "El formulario se envió demasiado rápido o ha caducado. Vuelve a abrirlo e inténtalo de nuevo.":
+    {
+      en: "The form was submitted too quickly or has expired. Reopen it and try again.",
+      fr: "Le formulaire a été envoyé trop rapidement ou a expiré. Rouvrez-le et réessayez.",
+    },
+  "Esta consulta ya se ha enviado o está en proceso. Espera unos minutos antes de repetirla.":
+    {
+      en: "This enquiry has already been sent or is being processed. Wait a few minutes before trying again.",
+      fr: "Cette demande a déjà été envoyée ou est en cours de traitement. Attendez quelques minutes avant de réessayer.",
+    },
   "El nombre no admite caracteres de control.": {
     en: "The name must not contain control characters.",
     fr: "Le nom ne doit pas contenir de caractères de contrôle.",

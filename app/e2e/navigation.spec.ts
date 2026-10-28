@@ -40,7 +40,10 @@ test("contact route is independent and keeps the need query for each service", a
     expect(new URL(page.url()).hash).toBe(`#/contacto?need=${need}`);
     await expect(page.locator("#f-tipo")).toHaveValue(need);
     await expect(
-      page.getByRole("heading", { level: 1, name: "Cuéntanos qué necesita mejorar." })
+      page.getByRole("heading", {
+        level: 1,
+        name: "Cuéntanos qué necesita mejorar.",
+      })
     ).toBeVisible();
   }
 
@@ -68,8 +71,18 @@ test("language controls translate accessible names, metadata and persist the cho
 
   await expect(page.locator("html")).toHaveAttribute("lang", "es");
   await expect(page).toHaveTitle(
-    "ITER — Encontramos mejores formas de resolver problemas"
+    "ITER Colombia | Software a medida y automatización"
   );
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "https://itercol.com/"
+  );
+  const structuredData = await page
+    .locator('script[type="application/ld+json"]')
+    .textContent();
+  expect(JSON.parse(structuredData ?? "{}")).toMatchObject({
+    "@type": "Organization",
+  });
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
     "es_CO"
@@ -93,10 +106,12 @@ test("language controls translate accessible names, metadata and persist the cho
   await spanishSelect.selectOption("en");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle("ITER — We find better ways to solve problems");
+  await expect(page).toHaveTitle(
+    "ITER Colombia | Custom software and automation"
+  );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    "We design and build digital solutions to solve real problems."
+    "We design custom software, digital products and process automation to solve real problems in Colombia."
   );
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
@@ -114,7 +129,7 @@ test("language controls translate accessible names, metadata and persist the cho
 
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await expect(page).toHaveTitle(
-    "ITER — Nous trouvons de meilleures façons de résoudre les problèmes"
+    "ITER Colombie | Logiciels sur mesure et automatisation"
   );
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
     "content",
@@ -145,6 +160,19 @@ test("language controls translate accessible names, metadata and persist the cho
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await expect(page.getByRole("combobox", { name: "Langue" })).toBeVisible();
+});
+
+test("unknown hash routes show the designed 404 and return home", async ({
+  page,
+}) => {
+  await page.goto("/#/adresse-inexistante");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Esta forma no existe."
+  );
+  await page.getByRole("link", { name: "Volver al inicio" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "¿Y si no"
+  );
 });
 
 test("mobile menu is inert while closed, keyboard reachable, and closes on Escape", async ({
@@ -193,9 +221,13 @@ test("the header switches from overlay to desktop navigation at 1280px", async (
   await page.setViewportSize({ width: 1279, height: 900 });
   await page.goto("/#/");
   await expect(page.getByRole("button", { name: "Abrir menú" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Principal" })).toBeHidden();
+  await expect(
+    page.getByRole("navigation", { name: "Principal" })
+  ).toBeHidden();
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(page.getByRole("navigation", { name: "Principal" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Principal" })
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Abrir menú" })).toBeHidden();
 });

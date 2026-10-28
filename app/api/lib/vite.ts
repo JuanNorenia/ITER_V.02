@@ -13,13 +13,14 @@ export function serveStaticFiles(app: App) {
 
   app.use("*", serveStatic({ root: publicPath }));
 
-  app.notFound((c) => {
+  app.notFound(c => {
     const accept = c.req.header("accept") ?? "";
     if (!accept.includes("text/html")) {
       return c.json({ error: "Not Found" }, 404);
     }
     const indexPath = path.resolve(publicPath, "index.html");
     const content = fs.readFileSync(indexPath, "utf-8");
-    return c.html(content);
+    const knownPage = c.req.path === "/" || c.req.path === "/contacto";
+    return c.html(content, knownPage ? 200 : 404);
   });
 }

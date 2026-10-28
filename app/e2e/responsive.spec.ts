@@ -31,6 +31,12 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
 
     for (const width of widths) {
       await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(
+        () =>
+          new Promise<void>(resolve =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+          )
+      );
       const metrics = await page.evaluate(() => {
         const selectors = [
           "#top",
@@ -60,10 +66,18 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
         });
       });
       for (const item of metrics) {
-        expect(item.missing, `${target} ${width}px ${item.selector}`).toBe(false);
+        expect(item.missing, `${target} ${width}px ${item.selector}`).toBe(
+          false
+        );
         if (item.missing) continue;
-        expect(item.left, `${target} ${width}px ${item.selector} left`).toBeGreaterThanOrEqual(-1);
-        expect(item.right, `${target} ${width}px ${item.selector} right`).toBeLessThanOrEqual(width + 1);
+        expect(
+          item.left,
+          `${target} ${width}px ${item.selector} left`
+        ).toBeGreaterThanOrEqual(-1);
+        expect(
+          item.right,
+          `${target} ${width}px ${item.selector} right`
+        ).toBeLessThanOrEqual(width + 1);
         expect(
           item.scrollWidth,
           `${target} ${width}px ${item.selector} horizontal overflow`
@@ -81,7 +95,8 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
             captionLeft: captionRect?.left ?? Number.NaN,
             captionRight: captionRect?.right ?? Number.NaN,
             captionWidth: caption?.clientWidth ?? 0,
-            captionScrollWidth: caption?.scrollWidth ?? Number.POSITIVE_INFINITY,
+            captionScrollWidth:
+              caption?.scrollWidth ?? Number.POSITIVE_INFINITY,
           };
         })
       );
@@ -89,7 +104,9 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
       for (const figure of figureMetrics) {
         expect(figure.figureLeft).toBeGreaterThanOrEqual(-1);
         expect(figure.figureRight).toBeLessThanOrEqual(width + 1);
-        expect(figure.captionLeft).toBeGreaterThanOrEqual(figure.figureLeft - 1);
+        expect(figure.captionLeft).toBeGreaterThanOrEqual(
+          figure.figureLeft - 1
+        );
         expect(figure.captionRight).toBeLessThanOrEqual(figure.figureRight + 1);
         expect(figure.captionScrollWidth).toBeLessThanOrEqual(
           figure.captionWidth + 1
@@ -118,7 +135,9 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
         const copy = document.querySelector("#top .hero-copy");
         const figure = document.querySelector("#top figure");
         const lines = Array.from(
-          document.querySelectorAll<HTMLElement>("#top .hero-copy h1 .rv-line > span")
+          document.querySelectorAll<HTMLElement>(
+            "#top .hero-copy h1 .rv-line > span"
+          )
         ).map(element => {
           const range = document.createRange();
           range.selectNodeContents(element);
@@ -144,12 +163,16 @@ test("home and contact layouts fit six widths in Spanish, English and French", a
       const secondLine = heroGeometry.lines[1];
       expect(firstLine.length).toBeGreaterThan(0);
       expect(secondLine.length).toBeGreaterThan(0);
-      expect(secondLine[0].top).toBeGreaterThanOrEqual(firstLine.at(-1)!.bottom - 1.1);
+      expect(secondLine[0].top).toBeGreaterThanOrEqual(
+        firstLine.at(-1)!.bottom - 1.1
+      );
       for (const lineRect of secondLine) {
         expect(lineRect.left).toBeGreaterThanOrEqual(heroGeometry.copyLeft - 1);
         expect(lineRect.right).toBeLessThanOrEqual(heroGeometry.copyRight + 1);
         if (width >= 1024) {
-          expect(lineRect.right).toBeLessThanOrEqual(heroGeometry.figureLeft - 1);
+          expect(lineRect.right).toBeLessThanOrEqual(
+            heroGeometry.figureLeft - 1
+          );
         }
       }
       if (width >= 1024) {

@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -65,7 +65,13 @@ module.exports = {
         xs: "0",
       },
       fontFamily: {
-        display: ['"Archivo"', '"Helvetica Neue"', "Helvetica", "Arial", "sans-serif"],
+        display: [
+          '"Archivo"',
+          '"Helvetica Neue"',
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
         mono: ['"IBM Plex Mono"', '"SFMono-Regular"', "Consolas", "monospace"],
       },
       boxShadow: {
@@ -92,5 +98,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [],
+};
