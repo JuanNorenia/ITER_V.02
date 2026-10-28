@@ -1,4 +1,4 @@
-import AsciiStudy from "@/components/AsciiStudy";
+import NotFoundAscii from "@/components/NotFoundAscii";
 import { useLocale } from "@/providers/LocaleProvider";
 
 export default function NotFoundPage() {
@@ -47,7 +47,7 @@ export default function NotFoundPage() {
         </div>
 
         <div className="min-w-0 lg:col-span-5">
-          <AsciiStudy className="min-h-[300px] w-full sm:min-h-[360px]" />
+          <NotFoundAscii className="min-h-[300px] w-full sm:min-h-[360px]" />
           <p className="mono-data mt-3 text-right text-smoke">
             {t("Estructura → intervención → transformación")}
           </p>
