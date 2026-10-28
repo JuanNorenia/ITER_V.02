@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import AsciiStudy from "@/components/AsciiStudy";
 import { useLocale } from "@/providers/LocaleProvider";
 
 export default function NotFoundPage() {
@@ -23,14 +23,12 @@ export default function NotFoundPage() {
         <span className="bg-red px-2 py-1 text-white">404</span>
       </div>
 
-      <div className="relative z-10 grid flex-1 items-center gap-10 py-16 lg:grid-cols-12">
-        <div className="lg:col-span-9">
-          <p className="mono-label mb-5 text-red">
-            {t("Fuera de la retícula")}
-          </p>
+      <div className="relative z-10 grid flex-1 items-center gap-10 py-12 lg:grid-cols-12 lg:py-16">
+        <div className="lg:col-span-7">
+          <p className="mono-label mb-5 text-red">{t("Fuera de la retícula")}</p>
           <h1
             id="not-found-title"
-            className="display-hero max-w-5xl text-[clamp(4rem,15vw,12rem)]"
+            className="display-hero max-w-5xl text-[clamp(4rem,12vw,10rem)]"
           >
             {t("Esta forma no existe.")}
           </h1>
@@ -39,21 +37,18 @@ export default function NotFoundPage() {
               "La dirección que buscas cambió o ya no está disponible. Volvamos a encontrar el camino."
             )}
           </p>
-          <Link
-            to="/"
+          <a
+            href={import.meta.env.BASE_URL}
             className="btn-sweep btn-sweep--red red-edge-link mono-label mt-8 inline-flex min-h-12 items-center gap-4 border border-red bg-red px-6 py-3 text-white"
           >
             <span aria-hidden="true">←</span>
             {t("Volver al inicio")}
-          </Link>
+          </a>
         </div>
 
-        <div
-          className="mono-data hidden justify-self-end text-right text-smoke lg:block"
-          aria-hidden="true"
-        >
-          <p>ITER / 404</p>
-          <p className="mt-2">
+        <div className="min-w-0 lg:col-span-5">
+          <AsciiStudy className="min-h-[300px] w-full sm:min-h-[360px]" />
+          <p className="mono-data mt-3 text-right text-smoke">
             {t("Estructura → intervención → transformación")}
           </p>
         </div>

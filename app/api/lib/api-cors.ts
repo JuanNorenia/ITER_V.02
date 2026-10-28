@@ -33,6 +33,18 @@ export function parseAllowedOrigins(
   return origins;
 }
 
+/** ITER's production front ends must remain usable when Hostinger rewrites the
+ * request URL to its internal origin before the API middleware sees it. */
+export function getAllowedOrigins(
+  value = process.env.ALLOWED_ORIGINS ?? ""
+): Set<string> {
+  return new Set([
+    "https://itercol.com",
+    "https://www.itercol.com",
+    ...parseAllowedOrigins(value),
+  ]);
+}
+
 export function apiCors(allowedOrigins: Set<string>): MiddlewareHandler {
   const methods = ["GET", "POST", "OPTIONS"];
   const headers = ["content-type", "trpc-accept"];

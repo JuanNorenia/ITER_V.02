@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { nav, site } from "@/config/site";
-import { contactPath, homeSectionPath } from "@/lib/navigation";
+import { contactPath } from "@/lib/navigation";
 import { useLocale } from "@/providers/LocaleProvider";
 
 /**
@@ -36,11 +36,7 @@ export default function Footer() {
           {nav.map(item => (
             <Link
               key={item.href}
-              to={
-                item.href === "/contacto"
-                  ? contactPath()
-                  : homeSectionPath(item.href.slice(1))
-              }
+              to={item.href === "/contacto" ? contactPath() : item.href}
               className="link-line body-text w-fit max-w-full"
             >
               {t(item.label)}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAllowedOrigins } from "./api-cors";
+import { getAllowedOrigins, parseAllowedOrigins } from "./api-cors";
 
 describe("API origin allowlist", () => {
   it("normalizes exact origins and supports an empty allowlist", () => {
@@ -14,6 +14,14 @@ describe("API origin allowlist", () => {
   it("does not expand wildcard-looking hostnames into subdomain permissions", () => {
     const origins = parseAllowedOrigins("https://*.example.com");
     expect(origins.has("https://pages.example.com")).toBe(false);
+  });
+
+  it("always permits exact ITER production origins alongside configured origins", () => {
+    const origins = getAllowedOrigins("https://pages.example");
+    expect(origins.has("https://itercol.com")).toBe(true);
+    expect(origins.has("https://www.itercol.com")).toBe(true);
+    expect(origins.has("https://pages.example")).toBe(true);
+    expect(origins.has("https://evil.itercol.com")).toBe(false);
   });
 
   it.each([

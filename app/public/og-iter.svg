@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">ITER — Encontramos la forma</title>
+  <desc id="desc">Software a medida, productos digitales y automatización con propósito.</desc>
+  <rect width="1200" height="630" fill="#f4f2ee"/>
+  <g stroke="#d9d6d0" stroke-width="1">
+    <path d="M80 0v630M210 0v630M340 0v630M470 0v630M600 0v630M730 0v630M860 0v630M990 0v630M1120 0v630"/>
+    <path d="M0 90h1200M0 220h1200M0 350h1200M0 480h1200M0 610h1200"/>
+  </g>
+  <rect x="80" y="92" width="72" height="12" fill="#e2251b"/>
+  <text x="80" y="350" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="250" font-weight="900" letter-spacing="-18">ITER<tspan fill="#e2251b">.</tspan></text>
+  <text x="88" y="432" fill="#292929" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="600">Encontramos la forma.</text>
+  <text x="88" y="510" fill="#696761" font-family="Courier New, monospace" font-size="18" letter-spacing="2">SOFTWARE A MEDIDA / PRODUCTOS DIGITALES / AUTOMATIZACIÓN</text>
+  <text x="1120" y="576" fill="#696761" font-family="Courier New, monospace" font-size="15" text-anchor="end">COLOMBIA · ITERCOL.COM</text>
+</svg>

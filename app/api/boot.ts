@@ -4,7 +4,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router";
 import { createContext } from "./context";
 import { env } from "./lib/env";
-import { apiCors, parseAllowedOrigins } from "./lib/api-cors";
+import { apiCors, getAllowedOrigins } from "./lib/api-cors";
 import { getClientIp } from "./lib/client-ip";
 import { requestBodyLimit } from "./lib/request-body";
 import { createContactProvider } from "./providers/contact";
@@ -12,7 +12,7 @@ import { createContactProvider } from "./providers/contact";
 export function createApiApp() {
   const app = new Hono<{ Bindings: HttpBindings }>();
 
-  app.use("/api/*", apiCors(parseAllowedOrigins()));
+  app.use("/api/*", apiCors(getAllowedOrigins()));
   app.use("/api/*", requestBodyLimit());
   app.get("/api/health", c => {
     let configured = false;
