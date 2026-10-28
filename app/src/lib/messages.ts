@@ -96,10 +96,6 @@ export const messages: Record<string, { en: string; fr: string }> = {
       en: "Fig. 01 — Motion as a system: build, shift, subtract. No images; just real-time typography.",
       fr: "Fig. 01 — Le mouvement comme système : construire, déplacer, soustraire. Sans images ; uniquement de la typographie en temps réel.",
     },
-  "V.01 — Versión pública provisional": {
-    en: "V.01 — Provisional public version",
-    fr: "V.01 — Version publique provisoire",
-  },
   "Desliza para recorrer el sistema ↓": {
     en: "Scroll to explore the system ↓",
     fr: "Faites défiler pour explorer le système ↓",
@@ -551,21 +547,11 @@ export const messages: Record<string, { en: string; fr: string }> = {
       fr: "Nous avons reçu plusieurs envois successifs. Attendez quelques minutes, puis réessayez.",
     },
 
-  // Existing provisional privacy document; translations do not change its claims.
-  "Documento provisional — pendiente de revisión jurídica": {
-    en: "Provisional document — pending legal review",
-    fr: "Document provisoire — en attente de révision juridique",
-  },
   "Cerrar ✕": { en: "Close ✕", fr: "Fermer ✕" },
   "Política de tratamiento de datos personales": {
     en: "Personal data processing policy",
     fr: "Politique de traitement des données personnelles",
   },
-  "Este es un documento provisional de la primera versión pública de ITER. Será reemplazado por una política definitiva revisada jurídicamente. No representa una certificación de cumplimiento.":
-    {
-      en: "This is a provisional document for the first public version of ITER. It will be replaced by a final, legally reviewed policy. It does not constitute a certification of compliance.",
-      fr: "Ce document est provisoire et concerne la première version publique d’ITER. Il sera remplacé par une politique définitive ayant fait l’objet d’une révision juridique. Il ne constitue pas une certification de conformité.",
-    },
   "Qué datos recogemos.": {
     en: "What data we collect.",
     fr: "Les données que nous recueillons.",

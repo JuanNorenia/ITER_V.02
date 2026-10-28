@@ -62,11 +62,11 @@ Las referencias se describen como recursos formales —caracteres tipográficos,
 ## Seguridad, privacidad y operación
 
 - `VITE_*` es configuración pública fijada al compilar. No almacena secretos aunque el repositorio sea privado.
-- `RESEND_API_KEY`, remitente, destinatario y configuración de servidor pertenecen al host de API, nunca al artefacto Pages.
+- Las credenciales SMTP, el remitente, el destinatario y la configuración de servidor pertenecen al host de API, nunca al artefacto Pages.
 - `ALLOWED_ORIGINS` admite orígenes exactos sin rutas. Para el Pages estándar de este repositorio, el origen es `https://juannorenia.github.io`, no la URL que incluye `/ITER_V.02/`.
 - CORS controla acceso desde navegadores; no evita por sí solo llamadas directas ni sustituye controles de abuso. `TRUST_PROXY=false` es el punto de partida hasta revisar el proxy real.
 - La ausencia de DB no significa ausencia de tratamiento de datos: API, proveedor de correo, buzones y hosting intervienen en el flujo. No registres contenido personal o claves para depurar.
-- El [overlay de privacidad existente](../app/src/components/PrivacyOverlay.tsx) es **provisional y está pendiente de revisión jurídica**. Debe revisarse con los proveedores reales, responsable, finalidad, base aplicable, conservación, derechos y canal de contacto; no se declara cumplimiento certificado. En particular, hay que contrastar sus afirmaciones sobre terceros y almacenamiento con la operación real de Resend y del hosting.
+- El [overlay de privacidad existente](../app/src/components/PrivacyOverlay.tsx) es **provisional y está pendiente de revisión jurídica**. Debe revisarse con los proveedores reales, responsable, finalidad, base aplicable, conservación, derechos y canal de contacto; no se declara cumplimiento certificado. En particular, hay que contrastar sus afirmaciones sobre terceros y almacenamiento con la operación real de Hostinger Mail y del hosting.
 - Pages depende del plan y configuración de GitHub para repositorios privados; la privacidad del código no protege automáticamente el sitio publicado.
 
 La [guía de despliegue](despliegue.md) y la [lista de verificación](verificacion.md) detallan cómo comprobar estos límites antes de una publicación o un envío real.

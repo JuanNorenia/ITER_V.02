@@ -41,10 +41,7 @@ export default function PrivacyOverlay() {
       className="fixed inset-0 z-[60] overflow-y-auto break-words bg-black text-white"
     >
       <div className="mx-auto max-w-3xl px-5 py-20 sm:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <p className="mono-label min-w-0 flex-1 text-white/50">
-            {t("Documento provisional — pendiente de revisión jurídica")}
-          </p>
+        <div className="flex justify-end">
           <button
             ref={closeRef}
             type="button"
@@ -60,11 +57,6 @@ export default function PrivacyOverlay() {
         </h2>
 
         <div className="body-text mt-10 space-y-6 text-white/80">
-          <p>
-            {t(
-              "Este es un documento provisional de la primera versión pública de ITER. Será reemplazado por una política definitiva revisada jurídicamente. No representa una certificación de cumplimiento."
-            )}
-          </p>
           <p>
             <strong className="text-white">{t("Qué datos recogemos.")}</strong>{" "}
             {t(

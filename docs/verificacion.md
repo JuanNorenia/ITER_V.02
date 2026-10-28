@@ -4,7 +4,7 @@ Esta es una lista de aceptación, **no un informe de pruebas superadas**. No se 
 
 ## 1. Comprobaciones automatizadas
 
-Desde `app/`, con Node.js >= 22.12 (recomendado 24 LTS) y el entorno local preparado, en PowerShell o Bash/sh:
+Desde `app/`, con Node.js 24.22.1 y el entorno local preparado, en PowerShell o Bash/sh:
 
 ```sh
 npm ci
@@ -96,13 +96,12 @@ Con `PORT=3000`, abre `http://localhost:3000/#/contacto`. Esta es la prueba del 
 Este paso es independiente de `npm test` y **no se ha realizado por documentarlo**. Requiere decisión del responsable y recursos propios; puede consumir cuota y generar costes del proveedor.
 
 1. Revisa primero el aviso de privacidad provisional para el entorno y los proveedores reales. Mientras esté pendiente, no lo presentes como cumplimiento jurídico aprobado ni envíes datos de terceros para probar.
-2. Crea o utiliza tu cuenta de Resend y verifica un dominio que controles. Obtén una clave autorizada y revisa las restricciones de envío de tu cuenta.
-3. Elige un remitente permitido y un destinatario real bajo tu control o con autorización. No se proporciona ni se presupone una dirección de ITER.
-4. Configura **solo en el host de API o el entorno local privado** `CONTACT_PROVIDER=resend`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` y `CONTACT_TO_EMAIL`; reinicia el proceso. Nunca pongas estos valores en `VITE_*` ni en variables del build de Pages.
-5. Para desarrollo/Node de mismo origen, `VITE_API_BASE_URL` puede quedar vacío. Para Pages/preview, configura el origen HTTPS real de API, reconstruye los estáticos y autoriza el origen del frontend en `ALLOWED_ORIGINS`.
-6. Envía una única consulta identificable con datos propios de prueba y consentimiento. Comprueba que la respuesta del cliente corresponde a una confirmación válida de la API, no solo a un cambio visual.
-7. Revisa el evento y resultado del proveedor y el buzón de destino, incluida la carpeta de spam. La aceptación del proveedor y la recepción son hechos distintos; anota ambos por separado. Comprueba que la respuesta al correo se dirige al remitente del formulario cuando corresponda.
-8. Registra fecha, entorno y resultado sin incluir la clave, contenido personal ni cabeceras sensibles. Elimina los datos de prueba según la política que corresponda.
+2. Confirma que el buzón `contactanos@itercol.com` está activo y permite SMTP. Comprueba los MX, SPF, DKIM y DMARC en el DNS de `itercol.com`.
+3. Configura **solo en el host Node o en el entorno local privado** `CONTACT_PROVIDER=smtp`, `SMTP_HOST=smtp.hostinger.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER`, `SMTP_PASSWORD`, `CONTACT_FROM_EMAIL` y `CONTACT_TO_EMAIL`. Nunca pongas credenciales SMTP en `VITE_*` ni en variables del build de Pages.
+4. Para desarrollo/Node de mismo origen, `VITE_API_BASE_URL` puede quedar vacío. Para Pages/preview, configura el origen HTTPS real de API, reconstruye los estáticos y autoriza el origen del frontend en `ALLOWED_ORIGINS`.
+5. Envía una única consulta identificable con datos propios de prueba y consentimiento. Comprueba que la respuesta del cliente corresponde a una confirmación válida de la API, no solo a un cambio visual.
+6. Revisa el buzón de destino, incluida la carpeta de spam. El servidor SMTP aceptando el mensaje y su recepción en la bandeja son hechos distintos; anota ambos por separado. Comprueba que la respuesta al correo se dirige al remitente del formulario cuando corresponda.
+7. Registra fecha, entorno y resultado sin incluir la clave, contenido personal ni cabeceras sensibles. Elimina los datos de prueba según la política que corresponda.
 
 Si no hay confirmación o no llega el correo, conserva el estado como **no confirmado** y diagnostica proveedor, DNS, límites y bandeja; no presentes las pruebas con mocks como evidencia sustitutiva.
 

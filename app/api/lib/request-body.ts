@@ -42,7 +42,13 @@ export function requestBodyLimit(
       }),
       duplex: "half" as const,
     };
-    c.req.raw = new Request(c.req.raw, init);
+    // Construir desde la URL evita pasar entre runtimes el objeto Request
+    // envuelto por Hono/Vite (sus slots privados no siempre son compatibles).
+    c.req.raw = new Request(c.req.raw.url, {
+      ...init,
+      method: c.req.raw.method,
+      headers: new Headers(c.req.raw.headers),
+    });
     await next();
   };
 }

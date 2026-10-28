@@ -4,7 +4,7 @@ Esta guía utiliza el [contrato de comandos](../app/README.md). Las rutas se cue
 
 ## 1. Preparar el entorno
 
-Instala [Node.js](https://nodejs.org/en/download) **>= 22.12**, preferiblemente **24 LTS**, con npm. Usa una distribución compatible para tu sistema; no te bases en la indicación Node 20 heredada de la plantilla.
+Instala [Node.js 24.22.1](https://nodejs.org/en/download/archive/v24.22.1) con npm. Usa una distribución compatible para tu sistema; no te bases en la indicación Node 20 heredada de la plantilla.
 
 En PowerShell o Bash/sh:
 
@@ -58,10 +58,15 @@ Todo `VITE_*` queda incorporado en los estáticos que recibe el navegador. **No 
 
 | Variable | Valor inicial | Uso |
 | --- | --- | --- |
-| `CONTACT_PROVIDER` | `resend` | Selección explícita del proveedor. No implica que haya credenciales válidas. |
+| `CONTACT_PROVIDER` | `smtp` | Selección explícita del proveedor; usa `smtp` para Hostinger Mail. |
 | `RESEND_API_KEY` | Vacío | Clave propia de Resend; únicamente en el host de API o en el entorno local privado. |
-| `CONTACT_FROM_EMAIL` | Vacío | Remitente autorizado del dominio verificado con el proveedor. |
-| `CONTACT_TO_EMAIL` | Vacío | Destinatario real elegido por el responsable; no hay uno supuesto. |
+| `CONTACT_FROM_EMAIL` | Vacío | Remitente del dominio; en Hostinger debe ser una dirección autorizada. |
+| `CONTACT_TO_EMAIL` | Vacío | Destinatario real; se solicitó `contactanos@itercol.com`. |
+| `SMTP_HOST` | `smtp.hostinger.com` | Servidor saliente de Hostinger Email. |
+| `SMTP_PORT` | `465` | SSL/TLS implícito; el puerto `587` usa STARTTLS. |
+| `SMTP_SECURE` | `true` en 465 | `true` para TLS implícito; `false` para STARTTLS. |
+| `SMTP_USER` | Vacío | Usuario SMTP completo; solo en el entorno del servidor. |
+| `SMTP_PASSWORD` | Vacío | Contraseña del buzón; secreto solo del servidor. |
 | `ALLOWED_ORIGINS` | Vacío | Lista de orígenes exactos separados por comas para acceso externo. No admite rutas ni comodines. |
 | `TRUST_PROXY` | `false` | Solo activar tras un proxy confiable que sustituya o sanee las cabeceras reenviadas. |
 | `PORT` | `3000` | Puerto del servidor Node de producción; no cambia el puerto configurado del preview. |
@@ -70,7 +75,7 @@ Para desarrollo de mismo origen no hace falta añadir un origen externo. Si el f
 
 No hacen falta `DATABASE_URL`, migraciones, claves de IA ni credenciales de una plataforma ajena para la landing/contacto. Si el arranque aún exige variables de la plantilla, la integración del servidor está incompleta: no inventes secretos ni añadas una base de datos para ocultarlo.
 
-Los cambios de configuración del servidor requieren reiniciar el proceso. Sin credenciales de Resend, la web debe arrancar y el formulario responder con un error honesto, no con una confirmación simulada.
+Los cambios de configuración del servidor requieren reiniciar el proceso. Sin credenciales SMTP, la web debe arrancar y el formulario responder con un error honesto, no con una confirmación simulada.
 
 ## 3. Navegación e idiomas
 

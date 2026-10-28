@@ -97,7 +97,6 @@ export default function Hero() {
       </div>
 
       <div className="mono-label flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line py-3 text-smoke">
-        <p>{t("V.01 — Versión pública provisional")}</p>
         <p className="hidden sm:block">{t("Desliza para recorrer el sistema ↓")}</p>
       </div>
     </section>

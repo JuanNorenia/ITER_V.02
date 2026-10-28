@@ -8,7 +8,7 @@ Repositorio: [JuanNorenia/ITER_V.02](https://github.com/JuanNorenia/ITER_V.02).
 
 ## Desarrollo local
 
-Requiere **Node.js >= 22.12**, recomendado **Node.js 24 LTS**, y npm. No hace falta una base de datos para la landing y el contacto.
+Requiere **Node.js 24.22.1** y npm. No hace falta una base de datos para la landing y el contacto.
 
 Desde la raíz del repositorio, y **solo si todavía no existe `app/.env`**:
 

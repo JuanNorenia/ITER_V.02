@@ -1,4 +1,5 @@
 import { z } from "zod";
+import nodemailer from "nodemailer";
 import {
   BUDGET_RANGES,
   NEED_TYPES,
@@ -41,10 +42,18 @@ export function createContactProvider(
   const from = (config.CONTACT_FROM_EMAIL ?? config.CONTACT_FROM)?.trim();
   const to = (config.CONTACT_TO_EMAIL ?? config.CONTACT_TO)?.trim();
   const email = z.email();
+  const smtpHost = config.SMTP_HOST?.trim() || "smtp.hostinger.com";
+  const smtpPort = Number(config.SMTP_PORT?.trim() || "465");
+  const smtpUser = config.SMTP_USER?.trim();
+  const smtpPassword = config.SMTP_PASSWORD;
+  const smtpSecure =
+    config.SMTP_SECURE?.trim().toLowerCase() === "true" ||
+    (!config.SMTP_SECURE?.trim() && smtpPort === 465);
   const headers: Record<string, string> = {
     "content-type": "application/json",
   };
   let endpoint = "https://api.resend.com/emails";
+  let smtpTransport: ReturnType<typeof nodemailer.createTransport> | undefined;
   if (kind === "webhook") {
     try {
       const url = new URL(config.CONTACT_FORWARD_URL?.trim() ?? "");
@@ -60,6 +69,29 @@ export function createContactProvider(
     } catch {
       throw new ContactProviderError("unavailable");
     }
+  } else if (kind === "smtp") {
+    if (
+      !smtpHost ||
+      /[^\w.-]/u.test(smtpHost) ||
+      !Number.isInteger(smtpPort) ||
+      smtpPort < 1 ||
+      smtpPort > 65535 ||
+      !smtpUser ||
+      !smtpPassword ||
+      !email.safeParse(from).success ||
+      !email.safeParse(to).success
+    ) {
+      throw new ContactProviderError("unavailable");
+    }
+    smtpTransport = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: { user: smtpUser, pass: smtpPassword },
+      connectionTimeout: CONTACT_PROVIDER_TIMEOUT_MS,
+      greetingTimeout: CONTACT_PROVIDER_TIMEOUT_MS,
+      socketTimeout: CONTACT_PROVIDER_TIMEOUT_MS,
+    });
   } else if (
     kind !== "resend" ||
     !apiKey ||
@@ -74,6 +106,48 @@ export function createContactProvider(
 
   return {
     async send(input, idempotencyKey) {
+      const messageText = [
+        `Nombre: ${input.nombre}`,
+        `Correo: ${input.email.toLowerCase()}`,
+        `Empresa/proyecto: ${input.empresa || "—"}`,
+        `Tipo de necesidad: ${NEED_TYPES.find(n => n.value === input.tipoNecesidad)?.label || "—"}`,
+        `Presupuesto: ${BUDGET_RANGES.find(b => b.value === input.presupuesto)?.label || "—"}`,
+        "Autorización de tratamiento de datos: Sí",
+        "",
+        "¿Qué necesita resolver?",
+        input.mensaje,
+      ].join("\n");
+
+      if (kind === "smtp") {
+        if (!smtpTransport) throw new ContactProviderError("unavailable");
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            smtpTransport.sendMail({
+              from,
+              to,
+              replyTo: input.email.toLowerCase(),
+              subject: "Nueva consulta desde ITER",
+              text: messageText,
+              headers: { "X-Contact-Idempotency-Key": idempotencyKey },
+            }),
+            new Promise<never>((_, reject) => {
+              timeout = setTimeout(
+                () => reject(new ContactProviderError("timeout")),
+                CONTACT_PROVIDER_TIMEOUT_MS
+              );
+            }),
+          ]);
+        } catch (error) {
+          if (error instanceof ContactProviderError) throw error;
+          throw new ContactProviderError("failed");
+        } finally {
+          if (timeout) clearTimeout(timeout);
+          smtpTransport.close();
+        }
+        return;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(
         () => controller.abort(),
@@ -102,17 +176,7 @@ export function createContactProvider(
                   to: [to],
                   reply_to: input.email.toLowerCase(),
                   subject: "Nueva consulta desde ITER",
-                  text: [
-                    `Nombre: ${input.nombre}`,
-                    `Correo: ${input.email.toLowerCase()}`,
-                    `Empresa/proyecto: ${input.empresa || "—"}`,
-                    `Tipo de necesidad: ${NEED_TYPES.find(n => n.value === input.tipoNecesidad)?.label || "—"}`,
-                    `Presupuesto: ${BUDGET_RANGES.find(b => b.value === input.presupuesto)?.label || "—"}`,
-                    "Autorización de tratamiento de datos: Sí",
-                    "",
-                    "¿Qué necesita resolver?",
-                    input.mensaje,
-                  ].join("\n"),
+                  text: messageText,
                 }
           ),
           signal: controller.signal,

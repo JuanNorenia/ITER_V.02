@@ -62,7 +62,7 @@ Solo cuando decidas publicar:
 1. En **Settings → Pages → Build and deployment → Source**, selecciona **GitHub Actions**. No hace falta una rama `gh-pages`.
 2. Si corresponde, configura el dominio personalizado, su DNS y HTTPS según GitHub; actualiza la base, la URL pública y CORS de la API. No se incluye un dominio supuesto.
 3. En **Actions**, abre **Desplegar Pages manualmente** y pulsa **Run workflow**. Selecciona una rama que contenga todos los cambios integrados y autorizados por el entorno.
-4. El build usa Node 24, caché npm ligada a `app/package-lock.json`, y ejecuta `npm ci`, `npm run check`, `npm test` y `npm run build:pages` desde `app/`. Un fallo detiene el despliegue.
+4. El build usa Node 24.22.1, caché npm ligada a `app/package-lock.json`, y ejecuta `npm ci`, `npm run check`, `npm test` y `npm run build:pages` desde `app/`. Un fallo detiene el despliegue.
 5. Se verifica `dist/public/index.html` y se sube **solo `app/dist/public`** con `upload-pages-artifact`. Nunca se sube `app/dist` completo, `.env` ni `dist/boot.js`.
 6. El job dependiente lee la configuración existente con `configure-pages` (`enablement: false`) y publica con `deploy-pages`. Revisa la URL devuelta y realiza las pruebas manuales.
 
@@ -103,7 +103,7 @@ Esto no crea un backend. Un `VITE_API_BASE_URL` vacío debe terminar en un error
 
 La API se despliega en un host con Node compatible; Pages no la hospeda. El frontend llama a `/api/trpc` en el origen configurado por `VITE_API_BASE_URL`.
 
-1. Configura en el host de API `CONTACT_PROVIDER=resend`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` y `CONTACT_TO_EMAIL` con valores propios. Resend requiere cuenta y dominio remitente verificado; revisa restricciones de destinatarios, cuotas y posibles costes de tu cuenta.
+1. Para este proyecto, configura en el servidor Node `CONTACT_PROVIDER=smtp`, `SMTP_HOST=smtp.hostinger.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER`, `SMTP_PASSWORD`, `CONTACT_FROM_EMAIL` y `CONTACT_TO_EMAIL`. El buzón SMTP es `contactanos@itercol.com`; guarda su contraseña solo en el entorno privado del servidor. Hostinger documenta SMTP SSL/TLS en el puerto 465 y STARTTLS en el 587. No hace falta incluir credenciales en el frontend ni en el build estático.
 2. Publica la API por HTTPS, con la ruta `/api/trpc` y su preflight `OPTIONS` accesibles. El navegador no debe intentar una API HTTP desde un sitio HTTPS.
 3. Configura `ALLOWED_ORIGINS` con los orígenes exactos autorizados. Para este Pages estándar:
 
@@ -124,13 +124,21 @@ La API se despliega en un host con Node compatible; Pages no la hospeda. El fron
 5. Mantén `TRUST_PROXY=false` salvo que un proxy confiable controle las cabeceras reenviadas y hayas revisado esa configuración. CORS no sustituye autenticación ni protección contra abuso.
 6. Reinicia el servidor tras cambiar su entorno. Configura el origen público real en `VITE_API_BASE_URL` y reconstruye el frontend con el workflow cuando decidas publicar.
 
-No se entrega una dirección de remitente, destinatario o API ficticia. `VITE_CONTACT_EMAIL` es una dirección pública opcional e independiente del correo al que el servidor entrega las consultas.
+`VITE_CONTACT_EMAIL` es una dirección pública opcional e independiente del correo al que el servidor entrega las consultas. La API entrega al buzón `contactanos@itercol.com` mediante Hostinger Mail.
 
-Una respuesta aceptada por Resend no prueba llegada a la bandeja de destino. El procedimiento de [envío real](verificacion.md#envío-real-con-credenciales-propias) requiere verificar proveedor y buzón; las pruebas automatizadas no lo realizan.
+Una respuesta aceptada por SMTP tampoco prueba llegada a la bandeja de destino. El procedimiento de [envío real](verificacion.md#envío-real-con-credenciales-propias) requiere verificar la respuesta y el buzón; las pruebas automatizadas no lo realizan.
+
+## Hostinger · `itercol.com`
+
+El frontend y la API Hono pueden compartir el mismo origen en el sitio Node.js. Para ese despliegue usa `VITE_BASE_PATH=/`, `VITE_SITE_URL=https://itercol.com` y deja `VITE_API_BASE_URL` vacío. Mantén `SMTP_PASSWORD` únicamente en las variables privadas de la aplicación Hostinger.
+
+El build de este repositorio genera `app/dist/boot.js`. La configuración de Hostinger usa `app` como raíz del proyecto, el script `npm run build` y `dist/boot.js` como archivo de entrada. Hostinger conserva la conexión Git al branch `main`; el build previo compiló el proyecto, pero falló al buscar `dist/index.js`. El ajuste del archivo de entrada ya se corrigió a `dist/boot.js`; ese cambio no desplegó el sitio.
+
+El sitio ya existe bajo `itercol.com`, por lo que cada despliegue reemplaza sus archivos actuales. No inicies un nuevo despliegue hasta revisar ese destino y decidir que se puede sobrescribir.
 
 ## Producción Node completa · Windows/Linux
 
-En un host con Node.js >= 22.12, recomendado 24 LTS, utiliza `app/` como directorio de trabajo. Configura el entorno privado en el host, con base frontend `/` si publicas en la raíz y `VITE_API_BASE_URL` vacío si frontend y API comparten origen.
+En un host con Node.js 24.22.1, utiliza `app/` como directorio de trabajo. Configura el entorno privado en el host, con base frontend `/` si publicas en la raíz y `VITE_API_BASE_URL` vacío si frontend y API comparten origen.
 
 En PowerShell o Bash/sh:
 

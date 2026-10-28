@@ -6,7 +6,7 @@ Frontend React 19 + TypeScript + Vite 7 + Tailwind CSS 3, con API Hono/tRPC y pr
 
 ## Requisitos e instalación
 
-- Node.js **>= 22.12**; recomendado **24 LTS**.
+- Node.js **24.22.1** (fijado en `engines` y `.nvmrc`).
 - npm y el `package-lock.json` de esta carpeta: utiliza `npm ci`.
 - No se requiere base de datos para la landing y el formulario de contacto.
 
@@ -47,10 +47,10 @@ No uses `npm run preview` como prueba de backend ni `npm start` para validar un 
 
 ## Entorno
 
-La referencia es [`.env.example`](.env.example); sus valores de correo están vacíos intencionadamente.
+La referencia es [`.env.example`](.env.example); indica `contactanos@itercol.com` como remitente/destino solicitado, pero deja vacía la contraseña SMTP. El envío real requiere configurar esa credencial de forma privada.
 
 - Públicas, incorporadas por Vite al build: `VITE_API_BASE_URL`, `VITE_CONTACT_EMAIL`, `VITE_SITE_URL`, `VITE_BASE_PATH`.
-- Solo API/servidor: `CONTACT_PROVIDER`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`, `ALLOWED_ORIGINS`, `TRUST_PROXY`, `PORT`.
+- Solo API/servidor: `CONTACT_PROVIDER`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `ALLOWED_ORIGINS`, `TRUST_PROXY`, `PORT`.
 - Nunca pongas secretos en variables `VITE_*`, en el navegador ni en variables del repositorio destinadas al build de Pages.
 - `VITE_API_BASE_URL` es un origen externo sin `/api/trpc`. Vacío permite mismo origen en desarrollo/Node; Pages y preview sin API no pueden confirmar envío.
 - `VITE_CONTACT_EMAIL` no configura el destinatario del backend. No se proporciona ninguna dirección ficticia como contacto real.
