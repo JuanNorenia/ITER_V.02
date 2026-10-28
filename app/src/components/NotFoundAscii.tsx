@@ -51,7 +51,7 @@ export default function NotFoundAscii({ className = "" }: { className?: string }
       <div className="flex min-h-[250px] flex-1 items-center justify-center overflow-hidden px-3 py-8 sm:min-h-[300px]">
         <pre
           aria-hidden="true"
-          className="m-0 select-none whitespace-pre font-mono text-[clamp(1.15rem,3.6vw,2.8rem)] leading-[1.18] tracking-[0.18em] text-red"
+          className="m-0 select-none whitespace-pre font-mono text-[clamp(1.25rem,2.6vw,3rem)] leading-[1.18] tracking-[0.08em] text-red"
         >
           {render404(scan, reducedMotion)}
         </pre>
