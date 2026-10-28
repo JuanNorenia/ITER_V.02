@@ -7,16 +7,18 @@ import path from "path";
 type App = Hono<{ Bindings: HttpBindings }>;
 
 export function serveStaticFiles(app: App) {
-  const distPath = path.resolve(import.meta.dirname, "../dist/public");
+  // The deployment output directory (`dist`) is published as the Node app
+  // root on Hostinger, while local production keeps `boot.js` inside `dist/`.
+  const publicPath = path.resolve(import.meta.dirname, "public");
 
-  app.use("*", serveStatic({ root: "./dist/public" }));
+  app.use("*", serveStatic({ root: publicPath }));
 
   app.notFound((c) => {
     const accept = c.req.header("accept") ?? "";
     if (!accept.includes("text/html")) {
       return c.json({ error: "Not Found" }, 404);
     }
-    const indexPath = path.resolve(distPath, "index.html");
+    const indexPath = path.resolve(publicPath, "index.html");
     const content = fs.readFileSync(indexPath, "utf-8");
     return c.html(content);
   });
